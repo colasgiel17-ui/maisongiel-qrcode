@@ -176,6 +176,47 @@
   background: #25d366;
 }
 
+.qr-code-section {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: var(--bg-secondary);
+  border-radius: 1rem;
+  text-align: center;
+}
+
+.qr-instruction {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+}
+
+.qr-code-container {
+  display: inline-block;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+}
+
+.qr-code-container svg {
+  display: block;
+}
+
+.code-text {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  margin-top: 1rem;
+  font-family: 'Courier New', monospace;
+}
+
+.code-text strong {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+  letter-spacing: 0.1em;
+}
+
 @media (max-width: 768px) {
   .success-page {
     padding: 1rem 0;
@@ -276,5 +317,19 @@
   
   .coupon-section {
     padding: 1.25rem;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .action-buttons {
+    display: none !important;
+  }
+  
+  .qr-code-section {
+    page-break-inside: avoid;
   }
 }

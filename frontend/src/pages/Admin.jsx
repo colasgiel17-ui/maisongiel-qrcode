@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from '../services/api'
+import QRScanner from '../components/QRScanner'
 import './Admin.css'
 
 function Admin() {
@@ -12,6 +13,7 @@ function Admin() {
   const [activeTab, setActiveTab] = useState('stats')
   const [selectedReview, setSelectedReview] = useState(null)
   const [showModal, setShowModal] = useState(false)
+  const [showScanner, setShowScanner] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
@@ -109,6 +111,18 @@ function Admin() {
     }
   }
 
+  const fetchParticipations = async () => {
+    const token = localStorage.getItem('adminToken')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+
+    try {
+      const response = await axios.get('/api/admin/participations', config)
+      setParticipations(response.data)
+    } catch (error) {
+      console.error('Erreur chargement participations:', error)
+    }
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="page admin-page">
@@ -152,10 +166,18 @@ function Admin() {
     <div className="page admin-page">
       <div className="container">
         <div className="admin-header">
-          <h1>📊 Tableau de bord Administrateur</h1>
-          <button onClick={handleLogout} className="btn btn-outline">
-            Déconnexion
-          </button>
+          <h1>🛡️ Tableau de bord Admin</h1>
+          <div className="admin-actions">
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowScanner(true)}
+            >
+              📷 Scanner QR Code
+            </button>
+            <button className="btn btn-outline" onClick={handleLogout}>
+              Déconnexion
+            </button>
+          </div>
         </div>
 
         <div className="admin-tabs">
@@ -395,6 +417,16 @@ function Admin() {
             </div>
           </div>
         </div>
+      )}
+
+      {showScanner && (
+        <QRScanner 
+          onClose={() => setShowScanner(false)}
+          onScanSuccess={(data) => {
+            setShowScanner(false)
+            fetchParticipations()
+          }}
+        />
       )}
     </div>
   )

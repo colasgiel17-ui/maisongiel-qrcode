@@ -1,0 +1,98 @@
+.qr-scanner-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.qr-scanner-content {
+  background: white;
+  border-radius: 1rem;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.qr-scanner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.qr-scanner-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0.5rem;
+}
+
+.close-btn:hover {
+  color: var(--primary-color);
+}
+
+.scanner-start,
+.scan-success,
+.scan-error {
+  padding: 2rem;
+  text-align: center;
+}
+
+.scanner-start p {
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+}
+
+.scanner-active {
+  padding: 1.5rem;
+}
+
+#qr-reader {
+  margin-bottom: 1rem;
+}
+
+.success-icon,
+.error-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.scan-success h3,
+.scan-error h3 {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.reward-info {
+  background: var(--bg-secondary);
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.reward-info p {
+  margin: 0.5rem 0;
+  font-size: 1.125rem;
+}
+
+.scan-error p {
+  color: #dc2626;
+  margin-bottom: 1.5rem;
+}

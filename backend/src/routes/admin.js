@@ -184,4 +184,54 @@ router.delete('/reviews/:id', authAdmin, async (req, res) => {
   }
 })
 
+// Valider une récompense avec QR Code
+router.post('/validate-reward', authenticateToken, async (req, res) => {
+  try {
+    const { code } = req.body
+
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        message: 'Code manquant'
+      })
+    }
+
+    // Chercher la participation avec ce code
+    const participation = db.prepare(`
+      SELECT * FROM participations 
+      WHERE reward_code = ? 
+      AND reward_used = 0
+    `).get(code)
+
+    if (!participation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Code invalide ou déjà utilisé'
+      })
+    }
+
+    // Marquer la récompense comme utilisée
+    db.prepare(`
+      UPDATE participations 
+      SET reward_used = 1, 
+          used_at = CURRENT_TIMESTAMP 
+      WHERE reward_code = ?
+    `).run(code)
+
+    res.json({
+      success: true,
+      message: 'Récompense validée avec succès',
+      reward: participation.reward_type,
+      userName: participation.name
+    })
+
+  } catch (error) {
+    console.error('Erreur validation récompense:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la validation'
+    })
+  }
+})
+
 module.exports = router

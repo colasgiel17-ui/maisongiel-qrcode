@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { QRCodeSVG } from 'qrcode.react'
 import './RewardSuccess.css'
 
 function RewardSuccess() {
@@ -68,6 +69,62 @@ function RewardSuccess() {
               <p>✅ Valable jusqu'au : {new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('fr-FR')}</p>
               <p>📍 À utiliser dans notre établissement</p>
               <p>⚠️ Non cumulable avec d'autres promotions</p>
+            </div>
+          </div>
+
+          <div className="card reward-details">
+            <h2>🎁 Votre récompense</h2>
+            <div className="reward-name">{reward.label}</div>
+            
+            <div className="qr-code-section">
+              <p className="qr-instruction">
+                📱 Présentez ce QR Code en magasin
+              </p>
+              <div className="qr-code-container">
+                <QRCodeSVG 
+                  value={code}
+                  size={256}
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
+              <p className="code-text">Code : <strong>{code}</strong></p>
+            </div>
+
+            <div className="reward-info">
+              <div className="info-row">
+                <span className="info-icon">👤</span>
+                <span className="info-text">{userName || 'Client'}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-icon">📅</span>
+                <span className="info-text">
+                  Valable jusqu'au {new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('fr-FR', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                  })}
+                </span>
+              </div>
+              <div className="info-row">
+                <span className="info-icon">⚠️</span>
+                <span className="info-text">Utilisable une seule fois</span>
+              </div>
+            </div>
+
+            <div className="action-buttons">
+              <button 
+                className="btn btn-primary"
+                onClick={() => window.print()}
+              >
+                🖨️ Imprimer
+              </button>
+              <button 
+                className="btn btn-outline"
+                onClick={() => navigate('/')}
+              >
+                🏠 Retour à l'accueil
+              </button>
             </div>
           </div>
         </motion.div>
