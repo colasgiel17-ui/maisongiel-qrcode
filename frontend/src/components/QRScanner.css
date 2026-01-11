@@ -157,4 +157,12 @@
 .scan-error p {
   color: #dc2626;
   margin-bottom: 1.5rem;
+  font-size: 1.125rem;
+}
+
+.error-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
 }

@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
 import './RewardSuccess.css'
@@ -6,126 +7,102 @@ import './RewardSuccess.css'
 function RewardSuccess() {
   const location = useLocation()
   const navigate = useNavigate()
+  const [copied, setCopied] = useState(false)
 
   const reward = location.state?.reward
-  const userName = location.state?.userName
   const code = location.state?.code
+  const userName = location.state?.userName
 
-  if (!reward) {
-    navigate('/')
-    return null
+  useEffect(() => {
+    if (!reward || !code) {
+      navigate('/')
+    }
+  }, [reward, code, navigate])
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
-  const downloadCoupon = () => {
-    // Simuler le téléchargement d'un PDF
-    alert('Téléchargement du bon en cours... (À implémenter avec PDFKit côté backend)')
-  }
+  if (!reward || !code) return null
+
+  const expirationDate = new Date()
+  expirationDate.setDate(expirationDate.getDate() + 30)
 
   return (
     <div className="page success-page">
       <div className="container">
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="success-content"
+          className="success-container"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <div className="confetti">🎉🎊✨🎈🎁</div>
-          
-          <h1 className="success-title">🎉 Félicitations {userName} !</h1>
-          
-          <div className="card reward-card">
-            <div className="reward-icon">🏆</div>
-            <h2>Vous avez gagné :</h2>
-            <div className="reward-name">{reward.label}</div>
-            
-            <div className="coupon-section">
-              <div className="coupon-code">
-                <span className="code-label">Votre code :</span>
-                <span className="code-value">{code}</span>
-              </div>
-              
-              <p className="code-instructions">
-                Présentez ce code en caisse pour profiter de votre récompense
-              </p>
-
-              <div className="action-buttons">
-                <button className="btn btn-primary" onClick={downloadCoupon}>
-                  📥 Télécharger le bon
-                </button>
-                <button 
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    navigator.clipboard.writeText(code)
-                    alert('Code copié !')
-                  }}
-                >
-                  📋 Copier le code
-                </button>
-              </div>
-            </div>
-
-            <div className="validity-info">
-              <p>✅ Valable jusqu'au : {new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('fr-FR')}</p>
-              <p>📍 À utiliser dans notre établissement</p>
-              <p>⚠️ Non cumulable avec d'autres promotions</p>
-            </div>
+          <div className="success-header">
+            <div className="success-icon">🎉</div>
+            <h1>Félicitations !</h1>
+            <p>Vous avez gagné une récompense</p>
           </div>
 
-          <div className="card reward-details">
-            <h2>🎁 Votre récompense</h2>
-            <div className="reward-name">{reward.label}</div>
-            
-            <div className="qr-code-section">
-              <p className="qr-instruction">
-                📱 Présentez ce QR Code en magasin
-              </p>
-              <div className="qr-code-container">
+          <div className="card reward-card">
+            <div className="reward-title">
+              <span className="reward-icon">🎁</span>
+              <h2>{reward.label}</h2>
+            </div>
+
+            <div className="qr-section">
+              <p className="qr-label">Présentez ce QR Code en magasin</p>
+              <div className="qr-display">
                 <QRCodeSVG 
                   value={code}
-                  size={256}
+                  size={200}
                   level="H"
                   includeMargin={true}
                 />
               </div>
-              <p className="code-text">Code : <strong>{code}</strong></p>
             </div>
 
-            <div className="reward-info">
-              <div className="info-row">
-                <span className="info-icon">👤</span>
-                <span className="info-text">{userName || 'Client'}</span>
+            <div className="code-section">
+              <p className="code-label">Ou utilisez ce code :</p>
+              <div className="code-display">
+                <span className="code-value">{code}</span>
+                <button 
+                  className={`btn-copy ${copied ? 'copied' : ''}`}
+                  onClick={handleCopyCode}
+                >
+                  {copied ? '✓ Copié' : '📋 Copier'}
+                </button>
               </div>
-              <div className="info-row">
-                <span className="info-icon">📅</span>
-                <span className="info-text">
-                  Valable jusqu'au {new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('fr-FR', { 
+            </div>
+
+            <div className="reward-details">
+              <div className="detail-item">
+                <span className="detail-icon">👤</span>
+                <span className="detail-text">{userName || 'Client'}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-icon">📅</span>
+                <span className="detail-text">
+                  Valable jusqu'au {expirationDate.toLocaleDateString('fr-FR', { 
                     day: 'numeric', 
                     month: 'long', 
                     year: 'numeric' 
                   })}
                 </span>
               </div>
-              <div className="info-row">
-                <span className="info-icon">⚠️</span>
-                <span className="info-text">Utilisable une seule fois</span>
+              <div className="detail-item">
+                <span className="detail-icon">⚠️</span>
+                <span className="detail-text">Utilisable une seule fois</span>
               </div>
             </div>
 
-            <div className="action-buttons">
-              <button 
-                className="btn btn-primary"
-                onClick={() => window.print()}
-              >
-                🖨️ Imprimer
-              </button>
-              <button 
-                className="btn btn-outline"
-                onClick={() => navigate('/')}
-              >
-                🏠 Retour à l'accueil
-              </button>
-            </div>
+            <button 
+              className="btn btn-primary btn-full"
+              onClick={() => navigate('/')}
+            >
+              🏠 Retour à l'accueil
+            </button>
           </div>
         </motion.div>
       </div>

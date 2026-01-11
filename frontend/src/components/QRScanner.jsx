@@ -13,51 +13,69 @@ function QRScanner({ onScanSuccess, onClose }) {
     setScanning(true)
     setError(null)
 
-    const qrScanner = new Html5QrcodeScanner('qr-reader', {
-      fps: 10,
-      qrbox: { width: 250, height: 250 },
-      aspectRatio: 1.0,
-      rememberLastUsedCamera: true,
-      showTorchButtonIfSupported: true,
-      showZoomSliderIfSupported: true,
-      defaultZoomValueIfSupported: 2,
-      supportedScanTypes: []
-    }, /* verbose= */ false)
-
-    qrScanner.render(async (decodedText) => {
-      // Arrêter le scanner
-      qrScanner.clear()
-      setScanning(false)
-
+    // Attendre que le DOM soit prêt
+    setTimeout(() => {
       try {
-        // Vérifier et valider le code
-        const response = await axios.post('/api/admin/validate-reward', {
-          code: decodedText
-        })
+        const qrScanner = new Html5QrcodeScanner(
+          'qr-reader',
+          { 
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0,
+            rememberLastUsedCamera: true,
+            showTorchButtonIfSupported: true,
+            showZoomSliderIfSupported: true,
+            defaultZoomValueIfSupported: 2
+          },
+          false
+        )
 
-        if (response.data.success) {
-          setResult({
-            success: true,
-            reward: response.data.reward,
-            user: response.data.userName
-          })
-          onScanSuccess && onScanSuccess(response.data)
-        } else {
-          setError(response.data.message || 'Code invalide')
-        }
+        qrScanner.render(
+          async (decodedText) => {
+            console.log('QR Code scanné:', decodedText)
+            
+            // Arrêter le scanner
+            qrScanner.clear()
+            setScanning(false)
+
+            try {
+              // Vérifier et valider le code
+              const response = await axios.post('/api/admin/validate-reward', {
+                code: decodedText
+              })
+
+              if (response.data.success) {
+                setResult({
+                  success: true,
+                  reward: response.data.reward,
+                  user: response.data.userName
+                })
+                onScanSuccess && onScanSuccess(response.data)
+              } else {
+                setError(response.data.message || 'Code invalide')
+              }
+            } catch (err) {
+              console.error('Erreur validation:', err)
+              setError(err.response?.data?.message || 'Erreur lors de la validation')
+            }
+          },
+          (errorMessage) => {
+            // Erreur de scan (c'est normal pendant le scan)
+          }
+        )
+
+        setScanner(qrScanner)
       } catch (err) {
-        setError(err.response?.data?.message || 'Erreur lors de la validation')
+        console.error('Erreur démarrage scanner:', err)
+        setError('Impossible de démarrer la caméra. Vérifiez les permissions.')
+        setScanning(false)
       }
-    }, (errorMessage) => {
-      // Erreur de scan (normal, on continue de scanner)
-    })
-
-    setScanner(qrScanner)
+    }, 100)
   }
 
   const stopScanner = () => {
     if (scanner) {
-      scanner.clear()
+      scanner.clear().catch(err => console.error('Erreur arrêt scanner:', err))
       setScanner(null)
     }
     setScanning(false)
@@ -66,13 +84,18 @@ function QRScanner({ onScanSuccess, onClose }) {
   useEffect(() => {
     return () => {
       if (scanner) {
-        scanner.clear()
+        scanner.clear().catch(err => console.error('Cleanup error:', err))
       }
     }
   }, [scanner])
 
   return (
-    <div className="qr-scanner-modal">
+    <div className="qr-scanner-modal" onClick={(e) => {
+      if (e.target.className === 'qr-scanner-modal') {
+        stopScanner()
+        onClose()
+      }
+    }}>
       <div className="qr-scanner-content">
         <div className="qr-scanner-header">
           <h2>📷 Scanner un QR Code</h2>
@@ -94,8 +117,8 @@ function QRScanner({ onScanSuccess, onClose }) {
 
         {scanning && (
           <div className="scanner-active">
+            <p className="scan-instruction">👇 Pointez la caméra vers le QR Code</p>
             <div id="qr-reader"></div>
-            <p className="scan-instruction">Pointez la caméra vers le QR Code</p>
             <button className="btn btn-outline" onClick={stopScanner}>
               ❌ Annuler
             </button>
@@ -124,12 +147,20 @@ function QRScanner({ onScanSuccess, onClose }) {
             <div className="error-icon">❌</div>
             <h3>Erreur</h3>
             <p>{error}</p>
-            <button className="btn btn-primary" onClick={() => {
-              setError(null)
-              startScanner()
-            }}>
-              Réessayer
-            </button>
+            <div className="error-actions">
+              <button className="btn btn-primary" onClick={() => {
+                setError(null)
+                startScanner()
+              }}>
+                Réessayer
+              </button>
+              <button className="btn btn-outline" onClick={() => {
+                stopScanner()
+                onClose()
+              }}>
+                Fermer
+              </button>
+            </div>
           </div>
         )}
       </div>
