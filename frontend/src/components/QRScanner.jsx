@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Html5QrcodeScanner } from 'html5-qrcode'
 import axios from '../services/api'
 import './QRScanner.css'
@@ -7,18 +7,22 @@ function QRScanner({ onScanSuccess, onClose }) {
   const [scanning, setScanning] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+  const [scanner, setScanner] = useState(null)
 
   const startScanner = () => {
     setScanning(true)
     setError(null)
 
-    const scanner = new Html5QrcodeScanner('qr-reader', {
+    const qrScanner = new Html5QrcodeScanner('qr-reader', {
       fps: 10,
-      qrbox: { width: 250, height: 250 }
+      qrbox: { width: 250, height: 250 },
+      aspectRatio: 1.0,
+      rememberLastUsedCamera: true
     })
 
-    scanner.render(async (decodedText) => {
-      scanner.clear()
+    qrScanner.render(async (decodedText) => {
+      // Arrêter le scanner
+      qrScanner.clear()
       setScanning(false)
 
       try {
@@ -41,22 +45,44 @@ function QRScanner({ onScanSuccess, onClose }) {
         setError(err.response?.data?.message || 'Erreur lors de la validation')
       }
     }, (errorMessage) => {
-      console.log('Scan error:', errorMessage)
+      // Erreur de scan (normal, on continue de scanner)
     })
+
+    setScanner(qrScanner)
   }
+
+  const stopScanner = () => {
+    if (scanner) {
+      scanner.clear()
+      setScanner(null)
+    }
+    setScanning(false)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (scanner) {
+        scanner.clear()
+      }
+    }
+  }, [scanner])
 
   return (
     <div className="qr-scanner-modal">
       <div className="qr-scanner-content">
         <div className="qr-scanner-header">
           <h2>📷 Scanner un QR Code</h2>
-          <button className="close-btn" onClick={onClose}>✕</button>
+          <button className="close-btn" onClick={() => {
+            stopScanner()
+            onClose()
+          }}>✕</button>
         </div>
 
         {!scanning && !result && !error && (
           <div className="scanner-start">
-            <p>Scannez le QR Code du client pour valider sa récompense</p>
-            <button className="btn btn-primary" onClick={startScanner}>
+            <p>📱 Utilisez la caméra de votre appareil pour scanner le QR Code du client</p>
+            <p className="permission-note">⚠️ Vous devrez autoriser l'accès à votre caméra</p>
+            <button className="btn btn-primary btn-large" onClick={startScanner}>
               📸 Démarrer le scan
             </button>
           </div>
@@ -65,11 +91,9 @@ function QRScanner({ onScanSuccess, onClose }) {
         {scanning && (
           <div className="scanner-active">
             <div id="qr-reader"></div>
-            <button className="btn btn-outline" onClick={() => {
-              setScanning(false)
-              window.location.reload()
-            }}>
-              Annuler
+            <p className="scan-instruction">Pointez la caméra vers le QR Code</p>
+            <button className="btn btn-outline" onClick={stopScanner}>
+              ❌ Annuler
             </button>
           </div>
         )}
@@ -82,7 +106,10 @@ function QRScanner({ onScanSuccess, onClose }) {
               <p><strong>Client :</strong> {result.user}</p>
               <p><strong>Récompense :</strong> {result.reward}</p>
             </div>
-            <button className="btn btn-primary" onClick={onClose}>
+            <button className="btn btn-primary" onClick={() => {
+              stopScanner()
+              onClose()
+            }}>
               Fermer
             </button>
           </div>
