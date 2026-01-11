@@ -1,0 +1,283 @@
+.submit-review-page {
+  padding: 2rem 0;
+}
+
+.form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.required {
+  color: var(--danger-color);
+}
+
+.form-help {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.form-section {
+  margin: 1.5rem 0 1rem;
+}
+
+.form-section h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.section-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.form-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.form-divider::before,
+.form-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.form-divider span {
+  padding: 0 1rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.file-input-wrapper {
+  position: relative;
+}
+
+.file-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.file-input-label {
+  display: block;
+  padding: 0.875rem;
+  border: 2px dashed var(--border-color);
+  border-radius: 0.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--bg-secondary);
+}
+
+.file-input-label:hover {
+  border-color: var(--primary-color);
+  background: white;
+}
+
+.checkbox-group {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 0.5rem;
+  border: 2px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.checkbox-group:has(input:checked) {
+  background: #fff5ed;
+  border-color: var(--primary-color);
+}
+
+.checkbox-label {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin-top: 0.25rem;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  flex-shrink: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: 2px solid #d1d5db;
+  border-radius: 0.375rem;
+  background: white;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.checkbox-label input[type="checkbox"]:hover {
+  border-color: var(--primary-color);
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.checkbox-label input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.checkbox-label span {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+.checkbox-label:has(input:checked) span {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.checkbox-label a {
+  color: var(--primary-color);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.btn-submit {
+  width: 100%;
+  font-size: 1.25rem;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.info-sidebar h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+}
+
+.tips-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tips-list li {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tips-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.tips-list strong {
+  display: block;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.tips-list p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 968px) {
+  .submit-review-page {
+    padding: 1rem 0;
+  }
+  
+  .form-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .info-sidebar {
+    order: -1;
+  }
+  
+  .review-form {
+    gap: 1.25rem;
+  }
+  
+  .btn-submit {
+    font-size: 1.125rem;
+    padding: 1.125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .submit-review-page {
+    padding: 0.75rem 0;
+  }
+  
+  .form-container {
+    gap: 1.25rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  .form-label {
+    font-size: 0.95rem;
+  }
+  
+  .form-input {
+    padding: 0.875rem;
+    font-size: 16px;
+  }
+  
+  .file-input-label {
+    padding: 1rem;
+    font-size: 0.95rem;
+  }
+  
+  .checkbox-label span {
+    font-size: 0.85rem;
+  }
+  
+  .btn-submit {
+    font-size: 1rem;
+    padding: 1rem;
+  }
+  
+  .tips-list {
+    gap: 1.25rem;
+  }
+  
+  .tips-list strong {
+    font-size: 0.95rem;
+  }
+  
+  .tips-list p {
+    font-size: 0.875rem;
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "qrcode-review-rewards",
+  "version": "1.0.0",
+  "description": "Site web interactif pour avis Google avec roue de la chance",
+  "scripts": {
+    "install-all": "cd frontend && npm install && cd ../backend && npm install",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev"
+  },
+  "keywords": ["qrcode", "reviews", "rewards", "wheel-of-fortune"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

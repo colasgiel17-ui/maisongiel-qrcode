@@ -1,0 +1,228 @@
+.home-page {
+  padding: 2rem 0;
+}
+
+.home-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.hero-card {
+  text-align: center;
+}
+
+.hero-card h2 {
+  font-size: 2rem;
+  color: var(--text-primary);
+  margin-bottom: 2rem;
+}
+
+.steps {
+  display: grid;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.step {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border-radius: 0.75rem;
+  transition: transform 0.3s ease;
+}
+
+.step:hover {
+  transform: translateX(10px);
+}
+
+.step-number {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.step-content h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.step-content p {
+  color: var(--text-secondary);
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-large {
+  font-size: 1.25rem;
+  padding: 1.25rem 2.5rem;
+}
+
+.qr-card {
+  text-align: center;
+}
+
+.qr-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.qr-container {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+  padding: 1rem;
+  background: white;
+  border-radius: 0.5rem;
+}
+
+.info-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.rewards-list {
+  list-style: none;
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.rewards-list li {
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 0.5rem;
+  font-size: 1.125rem;
+  border-left: 4px solid var(--primary-color);
+}
+
+.info-text {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  padding: 1rem;
+  background: #fef3c7;
+  border-radius: 0.5rem;
+  border-left: 4px solid #f59e0b;
+}
+
+@media (max-width: 768px) {
+  .home-page {
+    padding: 1rem 0;
+  }
+  
+  .home-content {
+    gap: 1.5rem;
+  }
+  
+  .hero-card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .steps {
+    gap: 1rem;
+  }
+  
+  .step {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.25rem;
+  }
+  
+  .step:hover {
+    transform: translateY(-5px);
+  }
+  
+  .step-number {
+    width: 45px;
+    height: 45px;
+    font-size: 1.25rem;
+  }
+  
+  .step-content h3 {
+    font-size: 1.125rem;
+  }
+  
+  .step-content p {
+    font-size: 0.95rem;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .btn-large {
+    width: 100%;
+    font-size: 1.125rem;
+    padding: 1.125rem 2rem;
+  }
+  
+  .qr-card h2 {
+    font-size: 1.25rem;
+  }
+  
+  .qr-container canvas {
+    max-width: 180px;
+    height: auto;
+  }
+  
+  .info-card h2 {
+    font-size: 1.25rem;
+  }
+  
+  .rewards-list {
+    gap: 0.625rem;
+  }
+  
+  .rewards-list li {
+    padding: 0.875rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-card h2 {
+    font-size: 1.25rem;
+  }
+  
+  .step {
+    padding: 1rem;
+  }
+  
+  .step-number {
+    width: 40px;
+    height: 40px;
+    font-size: 1.125rem;
+  }
+  
+  .qr-container canvas {
+    max-width: 160px;
+  }
+  
+  .btn-large {
+    font-size: 1rem;
+    padding: 1rem 1.5rem;
+  }
+}
