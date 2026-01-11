@@ -74,10 +74,41 @@
 
 .scanner-active {
   padding: 1.5rem;
+  text-align: center;
 }
 
 #qr-reader {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Style pour le lecteur de QR Code */
+#qr-reader video {
+  border-radius: 0.5rem;
+  width: 100% !important;
+  max-width: 500px;
+  height: auto !important;
+}
+
+#qr-reader__dashboard {
+  margin-top: 1rem;
+}
+
+#qr-reader__dashboard_section {
+  text-align: center;
+}
+
+/* Cacher le bouton de stop par défaut */
+#qr-reader__dashboard_section_csr button {
+  display: none;
+}
+
+/* Style pour la boîte de scan */
+#qr-reader__scan_region {
+  border: 3px solid var(--primary-color) !important;
+  border-radius: 1rem;
 }
 
 .scan-instruction {
@@ -85,7 +116,17 @@
   color: var(--primary-color);
   font-weight: 600;
   font-size: 1.125rem;
-  margin: 1rem 0;
+  margin: 1rem 0 1.5rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .success-icon,

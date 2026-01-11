@@ -17,8 +17,12 @@ function QRScanner({ onScanSuccess, onClose }) {
       fps: 10,
       qrbox: { width: 250, height: 250 },
       aspectRatio: 1.0,
-      rememberLastUsedCamera: true
-    })
+      rememberLastUsedCamera: true,
+      showTorchButtonIfSupported: true,
+      showZoomSliderIfSupported: true,
+      defaultZoomValueIfSupported: 2,
+      supportedScanTypes: []
+    }, /* verbose= */ false)
 
     qrScanner.render(async (decodedText) => {
       // Arrêter le scanner
