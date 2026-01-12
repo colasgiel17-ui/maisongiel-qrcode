@@ -1,23 +1,84 @@
 .home-page {
-  padding: 2rem 0;
+  background: var(--gradient-primary);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background decorations */
+.home-page::before,
+.home-page::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 0;
+}
+
+.home-page::before {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  right: -100px;
+}
+
+.home-page::after {
+  width: 300px;
+  height: 300px;
+  bottom: -50px;
+  left: -50px;
 }
 
 .home-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  max-width: 900px;
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
   margin: 0 auto;
+  animation: fadeIn 0.6s ease;
 }
 
-.hero-card {
+.hero {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: white;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 1.5rem;
+  opacity: 0.95;
+  font-weight: 400;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-card {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.form-card h2 {
+  font-size: 2rem;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
   text-align: center;
 }
 
-.hero-card h2 {
-  font-size: 2rem;
-  color: var(--text-primary);
+.form-description {
+  text-align: center;
+  color: var(--text-secondary);
   margin-bottom: 2rem;
+  font-size: 1.125rem;
 }
 
 .steps {
@@ -128,125 +189,88 @@
 
 .admin-btn-discreet {
   position: fixed;
-  bottom: 1rem;
-  right: 1rem;
-  width: 40px;
-  height: 40px;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   color: white;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
-  opacity: 0.5;
+  opacity: 0.4;
   z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .admin-btn-discreet:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
+.admin-btn-discreet:active {
+  transform: scale(0.95);
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .home-page {
-    padding: 1rem 0;
+  .home-page::before {
+    width: 250px;
+    height: 250px;
+    top: -50px;
+    right: -50px;
   }
-  
-  .home-content {
-    gap: 1.5rem;
+
+  .home-page::after {
+    width: 200px;
+    height: 200px;
+    bottom: -30px;
+    left: -30px;
   }
-  
-  .hero-card h2 {
+
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+  }
+
+  .form-card h2 {
     font-size: 1.5rem;
-    margin-bottom: 1.5rem;
   }
-  
-  .steps {
-    gap: 1rem;
+
+  .form-description {
+    font-size: 1rem;
   }
-  
-  .step {
-    flex-direction: column;
-    text-align: center;
-    padding: 1.25rem;
-  }
-  
-  .step:hover {
-    transform: translateY(-5px);
-  }
-  
-  .step-number {
+
+  .admin-btn-discreet {
     width: 45px;
     height: 45px;
+    bottom: 1rem;
+    right: 1rem;
     font-size: 1.25rem;
-  }
-  
-  .step-content h3 {
-    font-size: 1.125rem;
-  }
-  
-  .step-content p {
-    font-size: 0.95rem;
-  }
-  
-  .cta-buttons {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  
-  .btn-large {
-    width: 100%;
-    font-size: 1.125rem;
-    padding: 1.125rem 2rem;
-  }
-  
-  .qr-card h2 {
-    font-size: 1.25rem;
-  }
-  
-  .qr-container canvas {
-    max-width: 180px;
-    height: auto;
-  }
-  
-  .info-card h2 {
-    font-size: 1.25rem;
-  }
-  
-  .rewards-list {
-    gap: 0.625rem;
-  }
-  
-  .rewards-list li {
-    padding: 0.875rem;
-    font-size: 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .hero-card h2 {
-    font-size: 1.25rem;
+  .hero-title {
+    font-size: 2rem;
   }
-  
-  .step {
-    padding: 1rem;
-  }
-  
-  .step-number {
-    width: 40px;
-    height: 40px;
+
+  .hero-subtitle {
     font-size: 1.125rem;
   }
-  
-  .qr-container canvas {
-    max-width: 160px;
-  }
-  
-  .btn-large {
-    font-size: 1rem;
-    padding: 1rem 1.5rem;
+
+  .form-card {
+    padding: 1.5rem;
   }
 }
