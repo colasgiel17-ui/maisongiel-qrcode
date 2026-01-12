@@ -76,10 +76,15 @@ function VerifyReview() {
               <p><strong>📌 Comment obtenir le lien ?</strong></p>
               <ol>
                 <li>Sur Google Maps, laissez votre avis</li>
-                <li>Cliquez sur "Partager l'avis"</li>
-                <li>Copiez le lien</li>
+                <li>Cliquez sur "Partager" ou les 3 points</li>
+                <li>Copiez le lien de partage</li>
                 <li>Collez-le ici</li>
               </ol>
+              <p style={{ marginTop: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
+                Exemples de liens acceptés :<br />
+                • https://maps.app.goo.gl/xxxxx<br />
+                • https://www.google.com/maps/place/...
+              </p>
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -90,7 +95,7 @@ function VerifyReview() {
                   id="reviewLink"
                   value={reviewLink}
                   onChange={(e) => setReviewLink(e.target.value)}
-                  placeholder="https://maps.google.com/..."
+                  placeholder="https://maps.app.goo.gl/xxxxx"
                   required
                 />
               </div>

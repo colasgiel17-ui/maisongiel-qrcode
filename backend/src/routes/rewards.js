@@ -157,14 +157,15 @@ router.post('/verify-review', async (req, res) => {
       })
     }
 
-    // Vérifier que le lien contient "google" et "review" ou "reviews"
-    const isValidLink = reviewLink.includes('google') && 
-                       (reviewLink.includes('review') || reviewLink.includes('place'))
+    // Vérifier que le lien contient "google" ou "maps" ou "goo.gl"
+    const isValidLink = reviewLink.includes('google') || 
+                       reviewLink.includes('maps') ||
+                       reviewLink.includes('goo.gl')
 
     if (!isValidLink) {
       return res.status(400).json({
         success: false,
-        message: 'Le lien ne semble pas être un lien Google valide'
+        message: 'Le lien ne semble pas être un lien Google Maps valide'
       })
     }
 
