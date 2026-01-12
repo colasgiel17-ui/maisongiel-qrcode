@@ -65,7 +65,6 @@ router.get('/participations', auth, (req, res) => {
     const participations = db.prepare(`
       SELECT * FROM participations 
       ORDER BY created_at DESC
-      LIMIT 100
     `).all()
 
     res.json({ success: true, participations })

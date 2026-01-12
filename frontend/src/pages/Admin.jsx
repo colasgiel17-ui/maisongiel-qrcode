@@ -176,7 +176,18 @@ function Admin() {
         )}
 
         <div className="card">
-          <h2>📋 Participations récentes</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h2>📋 Participations récentes</h2>
+            <span style={{ 
+              background: 'var(--primary-color)', 
+              color: 'white', 
+              padding: '0.5rem 1rem', 
+              borderRadius: '2rem',
+              fontWeight: '700'
+            }}>
+              {participations.length} participation{participations.length > 1 ? 's' : ''}
+            </span>
+          </div>
           <div className="table-container">
             <table>
               <thead>
