@@ -119,6 +119,15 @@ function Home() {
           </div>
         </motion.div>
       </div>
+      
+      {/* Bouton admin discret */}
+      <button 
+        className="admin-btn-discreet"
+        onClick={() => navigate('/admin')}
+        title="Administration"
+      >
+        🔒
+      </button>
     </div>
   )
 }
