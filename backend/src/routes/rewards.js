@@ -44,7 +44,7 @@ router.post('/start', async (req, res) => {
     res.json({
       success: true,
       sessionId: sessionId,
-      googleMapsUrl: 'https://g.page/r/VOTRE_PLACE_ID/review' // À remplacer
+      googleMapsUrl: 'https://www.google.com/maps/place/Boulangerie+P%C3%A2tisserie+Maison+Giel+Saint-Yrieix-Sur-Charente/@45.6771281,0.1186605,601m/data=!3m2!1e3!4b1!4m6!3m5!1s0x47fe2fcf4f8a3a2b:0xdd9957b5f6e04651!8m2!3d45.6771244!4d0.1212354!16s%2Fg%2F11w4xsl4_r?entry=ttu&g_ep=EgoyMDI2MDEwNy4wIKXMDSoASAFQAw%3D%3D'
     })
 
   } catch (error) {
@@ -129,6 +129,61 @@ router.post('/spin', async (req, res) => {
 
   } catch (error) {
     console.error('❌ Erreur /spin:', error)
+    res.status(500).json({ success: false, message: 'Erreur serveur' })
+  }
+})
+
+// ✅ ÉTAPE 1.5 : Vérifier le lien d'avis
+router.post('/verify-review', async (req, res) => {
+  try {
+    const { sessionId, reviewLink } = req.body
+
+    if (!sessionId || !reviewLink) {
+      return res.status(400).json({
+        success: false,
+        message: 'SessionId et lien requis'
+      })
+    }
+
+    // Vérifier que la session existe
+    const participation = db.prepare(
+      'SELECT * FROM participations WHERE user_id = ?'
+    ).get(sessionId)
+
+    if (!participation) {
+      return res.status(400).json({
+        success: false,
+        message: 'Session introuvable'
+      })
+    }
+
+    // Vérifier que le lien contient "google" et "review" ou "reviews"
+    const isValidLink = reviewLink.includes('google') && 
+                       (reviewLink.includes('review') || reviewLink.includes('place'))
+
+    if (!isValidLink) {
+      return res.status(400).json({
+        success: false,
+        message: 'Le lien ne semble pas être un lien Google valide'
+      })
+    }
+
+    // Enregistrer le lien
+    db.prepare(`
+      UPDATE participations 
+      SET review_link = ?
+      WHERE user_id = ?
+    `).run(reviewLink, sessionId)
+
+    console.log('✅ Avis vérifié pour:', sessionId)
+
+    res.json({
+      success: true,
+      message: 'Avis vérifié ! Vous pouvez maintenant tourner la roue'
+    })
+
+  } catch (error) {
+    console.error('❌ Erreur /verify-review:', error)
     res.status(500).json({ success: false, message: 'Erreur serveur' })
   }
 })

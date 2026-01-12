@@ -37,11 +37,11 @@ function Home() {
         window.open(googleMapsUrl, '_blank')
         
         // Afficher le message
-        alert('✅ Laissez votre avis sur Google Maps puis revenez sur cette page pour tourner la roue !')
+        alert('✅ Une nouvelle fenêtre s\'est ouverte. Laissez votre avis puis revenez ici pour continuer !')
         
-        // Rediriger vers la roue
+        // Rediriger vers la page de vérification
         setTimeout(() => {
-          navigate('/wheel')
+          navigate('/verify-review')
         }, 1000)
       }
     } catch (error) {

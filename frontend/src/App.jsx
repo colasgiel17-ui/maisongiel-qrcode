@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
+import VerifyReview from './pages/VerifyReview'
 import WheelOfFortune from './pages/WheelOfFortune'
 import Reward from './pages/Reward'
 import Admin from './pages/Admin'
@@ -11,6 +12,7 @@ function App() {
       <div className="app">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/verify-review" element={<VerifyReview />} />
           <Route path="/wheel" element={<WheelOfFortune />} />
           <Route path="/reward" element={<Reward />} />
           <Route path="/admin" element={<Admin />} />

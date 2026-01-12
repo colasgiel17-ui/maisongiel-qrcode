@@ -1,26 +1,24 @@
-```javascript
-// ...existing code...
+const Database = require('better-sqlite3')
+const path = require('path')
 
-  // Ajouter la colonne reward_used si elle n'existe pas
-  try {
-    db.exec(`
-      ALTER TABLE participations 
-      ADD COLUMN reward_used INTEGER DEFAULT 0
-    `)
-    console.log('✅ Colonne reward_used ajoutée')
-  } catch (error) {
-    // La colonne existe déjà, c'est normal
-  }
+const dbPath = path.join(__dirname, '../../database.sqlite')
+const db = new Database(dbPath)
 
-  try {
-    db.exec(`
-      ALTER TABLE participations 
-      ADD COLUMN used_at TEXT
-    `)
-    console.log('✅ Colonne used_at ajoutée')
-  } catch (error) {
-    // La colonne existe déjà, c'est normal
-  }
+db.exec(`
+  CREATE TABLE IF NOT EXISTS participations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    review_link TEXT,
+    reward_type TEXT,
+    reward_code TEXT,
+    reward_used INTEGER DEFAULT 0,
+    used_at TEXT,
+    created_at TEXT NOT NULL
+  )
+`)
 
-// ...existing code...
-```
+console.log('✅ Base de données initialisée')
+
+module.exports = db
