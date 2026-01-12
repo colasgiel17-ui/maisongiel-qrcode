@@ -28,16 +28,6 @@ function Footer() {
               <li><a href="/rgpd">Protection des données (RGPD)</a></li>
             </ul>
           </div>
-
-          {/* Colonne 3: Horaires */}
-          <div className="footer-col">
-            <h3>🕐 Horaires</h3>
-            <ul className="footer-hours">
-              <li><strong>Lun - Ven:</strong> 7h - 19h</li>
-              <li><strong>Samedi:</strong> 7h - 19h</li>
-              <li><strong>Dimanche:</strong> 7h - 13h</li>
-            </ul>
-          </div>
         </div>
 
         <div className="footer-bottom">
