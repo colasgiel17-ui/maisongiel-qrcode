@@ -4,6 +4,7 @@ import VerifyReview from './pages/VerifyReview'
 import WheelOfFortune from './pages/WheelOfFortune'
 import Reward from './pages/Reward'
 import Admin from './pages/Admin'
+import RGPD from './pages/RGPD'
 import './App.css'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path="/wheel" element={<WheelOfFortune />} />
           <Route path="/reward" element={<Reward />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/rgpd" element={<RGPD />} />
         </Routes>
       </div>
     </Router>
