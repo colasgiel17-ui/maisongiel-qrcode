@@ -1,166 +1,135 @@
 const express = require('express')
 const router = express.Router()
-const db = require('../database')
-const { verifyToken, generateRewardCode } = require('../utils/helpers')
+const db = require('../database/init')
 
-// Définition des récompenses avec probabilités
-const REWARDS = [
-  { id: 1, label: '☕ Café offert', type: 'COFFEE', probability: 0.24 },
-  { id: 2, label: '💰 2€', type: 'DISCOUNT_2', probability: 0.25 },
-  { id: 3, label: '💰 1€', type: 'DISCOUNT_1', probability: 0.35 },
-  { id: 4, label: '🥤 Boisson offerte', type: 'DRINK', probability: 0.15 },
-  { id: 5, label: '🍰 Pâtisserie offerte', type: 'PASTRY', probability: 0.01 }
-]
-
-// Fonction pour sélectionner une récompense basée sur les probabilités
-function selectReward() {
-  const random = Math.random()
-  let cumulative = 0
-  
-  for (const reward of REWARDS) {
-    cumulative += reward.probability
-    if (random <= cumulative) {
-      return reward
-    }
-  }
-  
-  return REWARDS[0] // Fallback
+// Fonction pour générer un code unique
+function generateCode() {
+  return 'MG-' + Math.random().toString(36).substr(2, 8).toUpperCase()
 }
 
-// Faire tourner la roue et obtenir une récompense
-router.post('/spin', async (req, res) => {
+// 📝 ÉTAPE 1 : Soumettre nom/email
+router.post('/start', async (req, res) => {
   try {
-    const { token } = req.body
+    const { name, email } = req.body
 
-    if (!token) {
-      return res.status(400).json({ 
+    if (!name || !email) {
+      return res.status(400).json({
         success: false,
-        message: 'Token manquant'
+        message: 'Nom et email requis'
       })
     }
 
-    // Vérifier le token
-    const decoded = verifyToken(token)
-    if (!decoded) {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Token invalide ou expiré'
-      })
-    }
-
-    const reviewId = decoded.reviewId
-
-    // Vérifier si l'utilisateur a déjà obtenu une récompense
-    const existingReward = await db.get(
-      'SELECT id FROM rewards WHERE reviewId = ?',
-      [reviewId]
-    )
-
-    if (existingReward) {
-      return res.status(409).json({ 
-        success: false,
-        message: 'Vous avez déjà réclamé votre récompense'
-      })
-    }
-
-    // Sélectionner une récompense aléatoire
-    const selectedReward = selectReward()
-    const rewardCode = generateRewardCode()
+    // Vérifier si déjà participé
+    const existing = db.prepare('SELECT * FROM participations WHERE email = ?').get(email)
     
-    // Calculer la date d'expiration
-    const validityDays = parseInt(process.env.REWARD_VALIDITY_DAYS) || 30
-    const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + validityDays)
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vous avez déjà participé avec cet email'
+      })
+    }
 
-    // Insérer la récompense dans la base de données
-    await db.run(
-      `INSERT INTO rewards (reviewId, rewardType, rewardLabel, code, expiresAt)
-       VALUES (?, ?, ?, ?, ?)`,
-      [reviewId, selectedReward.type, selectedReward.label, rewardCode, expiresAt.toISOString()]
-    )
+    // Créer une session temporaire
+    const sessionId = generateCode()
+    
+    // Enregistrer la session (sans récompense pour l'instant)
+    db.prepare(`
+      INSERT INTO participations (
+        user_id, name, email, created_at
+      ) VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+    `).run(sessionId, name, email)
+
+    console.log('✅ Session créée:', sessionId, 'pour', email)
 
     res.json({
       success: true,
-      reward: {
-        id: selectedReward.id,
-        label: selectedReward.label,
-        type: selectedReward.type
-      },
-      code: rewardCode,
-      expiresAt: expiresAt.toISOString()
+      sessionId: sessionId,
+      googleMapsUrl: 'https://g.page/r/VOTRE_PLACE_ID/review' // À remplacer
     })
 
   } catch (error) {
-    console.error('Error spinning wheel:', error)
-    res.status(500).json({ 
-      success: false,
-      message: 'Erreur lors du tirage de la récompense'
-    })
+    console.error('❌ Erreur /start:', error)
+    res.status(500).json({ success: false, message: 'Erreur serveur' })
   }
 })
 
-// Vérifier/utiliser un code de récompense
-router.post('/redeem', async (req, res) => {
+// 🎡 ÉTAPE 2 : Tourner la roue
+router.post('/spin', async (req, res) => {
   try {
-    const { code } = req.body
+    const { sessionId } = req.body
 
-    if (!code) {
-      return res.status(400).json({ 
+    if (!sessionId) {
+      return res.status(400).json({
         success: false,
-        message: 'Code manquant'
+        message: 'Session invalide'
       })
     }
 
-    // Rechercher la récompense
-    const reward = await db.get(
-      'SELECT * FROM rewards WHERE code = ?',
-      [code]
-    )
+    // Vérifier que la session existe et n'a pas déjà de récompense
+    const participation = db.prepare(
+      'SELECT * FROM participations WHERE user_id = ?'
+    ).get(sessionId)
 
-    if (!reward) {
-      return res.status(404).json({ 
+    if (!participation) {
+      return res.status(400).json({
         success: false,
-        message: 'Code invalide'
+        message: 'Session introuvable'
       })
     }
 
-    // Vérifier si déjà utilisé
-    if (reward.used) {
-      return res.status(409).json({ 
+    if (participation.reward_type) {
+      return res.status(400).json({
         success: false,
-        message: 'Ce code a déjà été utilisé'
+        message: 'Vous avez déjà tourné la roue'
       })
     }
 
-    // Vérifier l'expiration
-    if (new Date(reward.expiresAt) < new Date()) {
-      return res.status(410).json({ 
-        success: false,
-        message: 'Ce code a expiré'
-      })
+    // Récompenses
+    const rewards = [
+      { label: 'Café offert', probability: 30 },
+      { label: 'Boisson offerte', probability: 25 },
+      { label: 'Pâtisserie offerte', probability: 20 },
+      { label: '1€ de réduction', probability: 15 },
+      { label: '2€ de réduction', probability: 10 }
+    ]
+
+    // Sélection aléatoire
+    const total = rewards.reduce((sum, r) => sum + r.probability, 0)
+    let random = Math.random() * total
+    
+    let selected = rewards[0]
+    for (const reward of rewards) {
+      random -= reward.probability
+      if (random <= 0) {
+        selected = reward
+        break
+      }
     }
 
-    // Marquer comme utilisé
-    await db.run(
-      'UPDATE rewards SET used = 1, usedAt = CURRENT_TIMESTAMP WHERE code = ?',
-      [code]
-    )
+    // Générer le code QR unique
+    const rewardCode = generateCode()
+
+    // Mettre à jour avec la récompense
+    db.prepare(`
+      UPDATE participations 
+      SET reward_type = ?, 
+          reward_code = ?,
+          reward_used = 0
+      WHERE user_id = ?
+    `).run(selected.label, rewardCode, sessionId)
+
+    console.log('🎁 Récompense attribuée:', selected.label, 'Code:', rewardCode)
 
     res.json({
       success: true,
-      message: 'Récompense validée',
-      reward: {
-        label: reward.rewardLabel,
-        type: reward.rewardType
-      }
+      reward: selected,
+      code: rewardCode,
+      name: participation.name
     })
 
   } catch (error) {
-    console.error('Error redeeming reward:', error)
-    res.status(500).json({ 
-      success: false,
-      message: 'Erreur lors de la validation du code'
-    })
+    console.error('❌ Erreur /spin:', error)
+    res.status(500).json({ success: false, message: 'Erreur serveur' })
   }
 })
 

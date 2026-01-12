@@ -1,151 +1,127 @@
 import { useState, useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import axios from '../services/api'
 import './WheelOfFortune.css'
 
-const REWARDS = [
-  { id: 1, label: '☕ Café offert', color: '#ff8c42', probability: 0.24 },
-  { id: 2, label: '💰 2€', color: '#ffa94d', probability: 0.25 },
-  { id: 3, label: '💰 1€', color: '#ffb366', probability: 0.35 },
-  { id: 4, label: '🥤 Boisson offerte', color: '#ffc480', probability: 0.15 },
-  { id: 5, label: '🍰 Pâtisserie offerte', color: '#ffd499', probability: 0.01 }
-]
-
 function WheelOfFortune() {
-  const location = useLocation()
   const navigate = useNavigate()
-  const [isSpinning, setIsSpinning] = useState(false)
+  const [spinning, setSpinning] = useState(false)
   const [rotation, setRotation] = useState(0)
-  const [selectedReward, setSelectedReward] = useState(null)
-  const [canSpin, setCanSpin] = useState(true)
-
-  const participationToken = location.state?.participationToken
-  const userName = location.state?.userName
+  const [sessionId, setSessionId] = useState(null)
 
   useEffect(() => {
-    if (!participationToken) {
-      navigate('/submit-review')
+    // Récupérer la session depuis localStorage
+    const storedSessionId = localStorage.getItem('sessionId')
+    
+    if (!storedSessionId) {
+      alert('❌ Session expirée. Veuillez recommencer.')
+      navigate('/')
+      return
     }
-  }, [participationToken, navigate])
+    
+    setSessionId(storedSessionId)
+  }, [navigate])
+
+  const prizes = [
+    { label: 'Café offert', emoji: '☕', color: '#FF6B6B' },
+    { label: 'Boisson offerte', emoji: '🥤', color: '#4ECDC4' },
+    { label: 'Pâtisserie offerte', emoji: '🍰', color: '#FFE66D' },
+    { label: '1€ de réduction', emoji: '💰', color: '#95E1D3' },
+    { label: '2€ de réduction', emoji: '💵', color: '#F38181' }
+  ]
 
   const spinWheel = async () => {
-    if (isSpinning || !canSpin) return
+    if (spinning || !sessionId) return
 
-    setIsSpinning(true)
-    setCanSpin(false)
+    setSpinning(true)
 
     try {
-      // Appel API pour obtenir la récompense
-      const response = await axios.post('/api/rewards/spin', {
-        token: participationToken
-      })
-
-      const rewardData = response.data.reward
-      const rewardIndex = REWARDS.findIndex(r => r.id === rewardData.id)
+      const response = await axios.post('/api/rewards/spin', { sessionId })
       
-      // Calcul de la rotation
-      const segmentAngle = 360 / REWARDS.length
-      const targetRotation = 360 * 5 + (rewardIndex * segmentAngle) + (segmentAngle / 2)
-      
-      setRotation(targetRotation)
-
-      // Animation terminée après 5 secondes
-      setTimeout(() => {
-        setIsSpinning(false)
-        setSelectedReward(rewardData)
+      if (response.data.success) {
+        const { reward, code, name } = response.data
         
-        // Redirection vers la page de succès après 2 secondes
-        setTimeout(() => {
-          navigate('/success', { 
-            state: { 
-              reward: rewardData,
-              userName: userName,
-              code: response.data.code
-            } 
-          })
-        }, 2000)
-      }, 5000)
+        // Trouver l'index
+        let prizeIndex = prizes.findIndex(p => reward.label.includes(p.label))
+        if (prizeIndex === -1) prizeIndex = 0
 
+        // Calcul rotation
+        const segmentAngle = 360 / prizes.length
+        const targetAngle = 360 - (prizeIndex * segmentAngle + segmentAngle / 2)
+        const finalRotation = 5 * 360 + targetAngle
+
+        setRotation(finalRotation)
+
+        // Attendre fin animation
+        setTimeout(() => {
+          localStorage.removeItem('sessionId')
+          navigate('/reward', {
+            state: { reward, code, name }
+          })
+        }, 4500)
+      }
     } catch (error) {
-      console.error('Erreur lors du spin:', error)
-      alert('Une erreur est survenue. Veuillez réessayer.')
-      setIsSpinning(false)
-      setCanSpin(true)
+      alert(error.response?.data?.message || 'Une erreur est survenue')
+      setSpinning(false)
     }
   }
+
+  if (!sessionId) return null
 
   return (
     <div className="page wheel-page">
       <div className="container">
         <motion.div
+          className="wheel-container"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
         >
-          <h1 className="page-title">🎰 La Roue de la Chance</h1>
-          <p className="page-subtitle">
-            {userName ? `${userName}, c` : 'C'}'est parti ! Tournez la roue et découvrez votre récompense
-          </p>
+          <h1 className="wheel-title">🎡 Roue de la Chance</h1>
+          <p className="wheel-subtitle">Cliquez pour découvrir votre récompense !</p>
 
-          <div className="wheel-container">
-            <div className="wheel-wrapper">
-              {/* Indicateur */}
-              <div className="wheel-pointer">▼</div>
+          <div className="wheel-wrapper">
+            <div className="wheel-arrow">▼</div>
 
-              {/* La roue */}
-              <div 
-                className="wheel"
-                style={{
-                  transform: `rotate(${rotation}deg)`,
-                  transition: isSpinning ? 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none'
-                }}
-              >
-                {REWARDS.map((reward, index) => {
-                  const angle = (360 / REWARDS.length) * index
-                  return (
-                    <div
-                      key={reward.id}
-                      className="wheel-segment"
-                      style={{
-                        transform: `rotate(${angle}deg)`,
-                        backgroundColor: reward.color
-                      }}
-                    >
-                      <div className="segment-text">
-                        {reward.label}
-                      </div>
-                    </div>
-                  )
-                })}
-                
-                {/* Centre de la roue */}
-                <div className="wheel-center">
-                  <span>🎁</span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              className={`btn btn-primary btn-spin ${isSpinning ? 'spinning' : ''}`}
-              onClick={spinWheel}
-              disabled={!canSpin || isSpinning}
+            <motion.div
+              className="wheel"
+              animate={{ rotate: rotation }}
+              transition={{ duration: 4, ease: "easeOut" }}
             >
-              {isSpinning ? '🔄 Rotation...' : '🎰 TOURNER LA ROUE'}
-            </button>
-
-            {selectedReward && !isSpinning && (
-              <motion.div
-                className="reward-announcement"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <h2>🎉 Félicitations !</h2>
-                <p className="reward-text">{selectedReward.label}</p>
-                <p className="redirect-text">Redirection vers votre récompense...</p>
-              </motion.div>
-            )}
+              {prizes.map((prize, index) => {
+                const angle = (360 / prizes.length) * index
+                return (
+                  <div
+                    key={index}
+                    className="wheel-segment"
+                    style={{
+                      transform: `rotate(${angle}deg)`,
+                      background: prize.color
+                    }}
+                  >
+                    <div className="segment-content">
+                      <span className="segment-emoji">{prize.emoji}</span>
+                      <span className="segment-label">{prize.label}</span>
+                    </div>
+                  </div>
+                )
+              })}
+              <div className="wheel-center">🎁</div>
+            </motion.div>
           </div>
+
+          {!spinning ? (
+            <button 
+              className="btn btn-primary btn-spin"
+              onClick={spinWheel}
+            >
+              🎰 Tourner la roue
+            </button>
+          ) : (
+            <div className="spinning-text">
+              🎵 La roue tourne... 🎵
+            </div>
+          )}
         </motion.div>
       </div>
     </div>

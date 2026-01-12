@@ -1,62 +1,89 @@
 .wheel-page {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
   padding: 2rem 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .wheel-container {
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
   text-align: center;
 }
 
-.wheel-wrapper {
-  position: relative;
-  width: 500px;
-  height: 500px;
-  margin: 3rem auto;
+.wheel-title {
+  font-size: 3rem;
+  color: white;
+  margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.wheel-pointer {
+.wheel-subtitle {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 3rem;
+}
+
+.wheel-wrapper {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  margin: 0 auto 2rem;
+}
+
+.wheel-arrow {
   position: absolute;
   top: -30px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 3rem;
+  color: #FFD700;
   z-index: 10;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
 }
 
 .wheel {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 400px;
+  height: 400px;
   border-radius: 50%;
+  border: 10px solid #FFD700;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  box-shadow: 0 0 0 15px #fff, 0 0 0 20px var(--primary-color), var(--shadow-lg);
 }
 
 .wheel-segment {
   position: absolute;
   width: 50%;
   height: 50%;
-  top: 50%;
+  top: 0;
   left: 50%;
-  transform-origin: 0 0;
-  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  transform-origin: 0% 100%;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 
-.segment-text {
+.segment-content {
   position: absolute;
-  top: 20%;
+  top: 30%;
   left: 50%;
-  width: 100%;
   transform: translateX(-50%) rotate(36deg);
-  font-weight: 700;
-  font-size: 0.7rem;
-  color: #1f2937;
-  text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.9);
-  white-space: nowrap;
   text-align: center;
-  pointer-events: none;
+  color: white;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.segment-emoji {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.segment-label {
+  display: block;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .wheel-center {
@@ -64,202 +91,107 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   background: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
-  box-shadow: var(--shadow-lg);
+  font-size: 2.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   z-index: 5;
 }
 
 .btn-spin {
-  margin-top: 2rem;
   font-size: 1.5rem;
-  padding: 1.5rem 3rem;
-  animation: pulse 2s infinite;
+  padding: 1.25rem 3rem;
+  background: #FFD700;
+  color: #333;
+  border: none;
+  border-radius: 50px;
+  font-weight: 700;
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+  transition: all 0.3s ease;
 }
 
-.btn-spin.spinning {
-  animation: none;
-  opacity: 0.7;
+.btn-spin:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6);
+}
+
+.spinning-text {
+  font-size: 1.5rem;
+  color: white;
+  font-weight: 700;
+  animation: pulse 1s infinite;
 }
 
 @keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
-.reward-announcement {
-  margin-top: 2rem;
+.result-display {
+  background: white;
   padding: 2rem;
-  background: linear-gradient(135deg, #ff8c42, #ffa94d);
-  border-radius: 1rem;
-  color: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
-.reward-announcement h2 {
-  font-size: 2rem;
+.result-display h2 {
+  color: var(--primary-color);
   margin-bottom: 1rem;
 }
 
-.reward-text {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.redirect-text {
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-.prizes-card {
-  margin-top: 3rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.prizes-card h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.prizes-grid {
+.result-prize {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-}
-
-.prize-item {
-  display: flex;
   align-items: center;
-  padding: 0.875rem 1rem;
-  background: var(--bg-secondary);
-  border-radius: 0.5rem;
-  border-left: 4px solid var(--primary-color);
+  gap: 0.5rem;
 }
 
-.prize-label {
-  font-size: 1rem;
-  font-weight: 500;
+.result-emoji {
+  font-size: 4rem;
+}
+
+.result-label {
+  font-size: 1.5rem;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
 @media (max-width: 768px) {
-  .wheel-page {
-    padding: 1rem 0;
+  .wheel-title {
+    font-size: 2rem;
   }
-  
+
   .wheel-wrapper {
     width: 300px;
     height: 300px;
-    margin: 2rem auto;
   }
-  
-  .wheel-pointer {
-    font-size: 2.5rem;
-    top: -25px;
+
+  .wheel {
+    width: 300px;
+    height: 300px;
   }
-  
-  .segment-text {
+
+  .segment-emoji {
+    font-size: 1.5rem;
+  }
+
+  .segment-label {
     font-size: 0.7rem;
-    width: 130px;
-    left: 55%;
   }
-  
+
   .wheel-center {
     width: 60px;
     height: 60px;
-    font-size: 1.75rem;
-  }
-  
-  .btn-spin {
-    font-size: 1.125rem;
-    padding: 1rem 2rem;
-    margin-top: 1.5rem;
-    width: 100%;
-    max-width: 300px;
-  }
-  
-  .reward-announcement {
-    margin-top: 1.5rem;
-    padding: 1.5rem;
-  }
-  
-  .reward-announcement h2 {
-    font-size: 1.5rem;
-  }
-  
-  .reward-text {
-    font-size: 1.25rem;
-  }
-  
-  .prizes-card {
-    margin-top: 2rem;
-  }
-  
-  .prizes-card h3 {
-    font-size: 1.25rem;
-  }
-  
-  .prize-item {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  
-  .prize-label {
-    font-size: 0.95rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .wheel-wrapper {
-    width: 260px;
-    height: 260px;
-    margin: 1.5rem auto;
-  }
-  
-  .wheel-pointer {
     font-size: 2rem;
-    top: -20px;
   }
-  
-  .segment-text {
-    font-size: 0.65rem;
-    width: 110px;
-    left: 53%;
-  }
-  
-  .wheel-center {
-    width: 50px;
-    height: 50px;
-    font-size: 1.5rem;
-  }
-  
+
   .btn-spin {
-    font-size: 1rem;
-    padding: 0.875rem 1.5rem;
-  }
-  
-  .reward-announcement {
-    padding: 1.25rem;
-  }
-  
-  .reward-announcement h2 {
     font-size: 1.25rem;
-  }
-  
-  .reward-text {
-    font-size: 1.125rem;
+    padding: 1rem 2rem;
   }
 }

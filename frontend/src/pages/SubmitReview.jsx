@@ -26,9 +26,7 @@ function SubmitReview() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError('')
-
-    // Validations
+    
     if (!formData.name || !formData.email) {
       setError('Veuillez remplir tous les champs obligatoires')
       return
@@ -45,35 +43,40 @@ function SubmitReview() {
     }
 
     setLoading(true)
+    setError(null)
 
     try {
       const data = new FormData()
       data.append('name', formData.name)
       data.append('email', formData.email)
-      data.append('reviewLink', formData.reviewLink)
-      if (formData.screenshot) {
-        data.append('screenshot', formData.screenshot)
-      }
+      if (formData.reviewLink) data.append('reviewLink', formData.reviewLink)
+      if (formData.screenshot) data.append('screenshot', formData.screenshot)
+
+      console.log('📤 Envoi du formulaire avec:', { 
+        name: formData.name, 
+        email: formData.email, 
+        reviewLink: !!formData.reviewLink, 
+        screenshot: !!formData.screenshot 
+      })
 
       const response = await axios.post('/api/reviews/submit', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
 
+      console.log('✅ Réponse reçue:', response.data)
+
       if (response.data.success) {
-        // Redirection vers la roue avec le token de participation
+        const userId = response.data.userId
+        console.log('✅ userId reçu:', userId)
+        
+        // Rediriger vers la roue avec le userId
         navigate('/wheel', { 
-          state: { 
-            participationToken: response.data.token,
-            userName: formData.name 
-          }
+          state: { userId: userId }
         })
       }
     } catch (err) {
-      if (err.response?.status === 429) {
-        setError('Vous avez déjà participé ! Une seule participation par personne.')
-      } else {
-        setError(err.response?.data?.message || 'Une erreur est survenue. Veuillez réessayer.')
-      }
+      console.error('❌ Erreur:', err)
+      setError(err.response?.data?.message || 'Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setLoading(false)
     }
