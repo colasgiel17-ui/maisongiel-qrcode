@@ -17,29 +17,44 @@ router.post('/start', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Nom et email requis' })
     }
 
-    // SQLite: Vérif doublon
-    const existing = db.prepare('SELECT * FROM participations WHERE email = ?').get(email)
-    if (existing) {
-      return res.status(400).json({ success: false, message: 'Vous avez déjà participé avec cet email' })
+    // ☁️ SUPABASE: Vérifier si l'email existe déjà (source de vérité unique)
+    const { data: existingSupabase, error: checkError } = await supabase
+      .from('participations')
+      .select('*')
+      .eq('email', email)
+      .single()
+
+    if (existingSupabase) {
+      console.log('❌ Email déjà utilisé (trouvé dans Supabase):', email)
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Vous avez déjà participé avec cet email' 
+      })
     }
 
     const sessionId = generateCode()
 
-    // SQLite: Insert
+    // SQLite: Insert (backup local)
     db.prepare(`
       INSERT INTO participations (user_id, name, email, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)
     `).run(sessionId, name, email)
 
-    // ☁️ SUPABASE: Insert (Backup Longue Durée)
-    supabase.from('participations').insert({
-      user_id: sessionId,
-      name,
-      email,
-      created_at: new Date().toISOString()
-    }).then(({ error }) => {
-      if (error) console.error('⚠️ Erreur Supabase Start:', error.message)
-      else console.log('☁️ Client sauvegardé sur Supabase')
-    })
+    // ☁️ SUPABASE: Insert (Source de vérité principale)
+    const { error: insertError } = await supabase
+      .from('participations')
+      .insert({
+        user_id: sessionId,
+        name,
+        email,
+        created_at: new Date().toISOString()
+      })
+
+    if (insertError) {
+      console.error('⚠️ Erreur Supabase Start:', insertError.message)
+      // Continuer quand même pour ne pas bloquer l'utilisateur
+    } else {
+      console.log('✅ Client créé dans Supabase:', email)
+    }
 
     res.json({
       success: true,

@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const jwt = require('jsonwebtoken')
 const db = require('../database/init')
+const supabase = require('../config/supabase')
 
 // Middleware d'authentification
 const auth = (req, res, next) => {
@@ -41,31 +42,44 @@ router.post('/login', (req, res) => {
   }
 })
 
-// 📊 Statistiques
-router.get('/stats', auth, (req, res) => {
+// 📊 Statistiques - LIT DEPUIS SUPABASE
+router.get('/stats', auth, async (req, res) => {
   try {
-    const stats = db.prepare(`
-      SELECT 
-        COUNT(*) as total,
-        COUNT(CASE WHEN reward_used = 1 THEN 1 END) as used,
-        COUNT(CASE WHEN reward_used = 0 AND reward_code IS NOT NULL THEN 1 END) as pending
-      FROM participations
-    `).get()
+    // ☁️ SUPABASE: Source unique de vérité
+    const { data: allParticipations, error } = await supabase
+      .from('participations')
+      .select('*')
 
-    res.json({ success: true, stats })
+    if (error) throw error
+
+    const total = allParticipations.length
+    const used = allParticipations.filter(p => p.reward_used === true).length
+    const pending = allParticipations.filter(p => p.reward_code && p.reward_used === false).length
+
+    console.log('📊 Stats depuis Supabase:', { total, used, pending })
+
+    res.json({ 
+      success: true, 
+      stats: { total, used, pending } 
+    })
   } catch (error) {
     console.error('Erreur stats:', error)
     res.status(500).json({ success: false, message: 'Erreur serveur' })
   }
 })
 
-// 📋 Liste des participations
-router.get('/participations', auth, (req, res) => {
+// 📋 Liste des participations - LIT DEPUIS SUPABASE (TOUTES)
+router.get('/participations', auth, async (req, res) => {
   try {
-    const participations = db.prepare(`
-      SELECT * FROM participations 
-      ORDER BY created_at DESC
-    `).all()
+    // ☁️ SUPABASE: Récupérer TOUTES les participations (pas de limite)
+    const { data: participations, error } = await supabase
+      .from('participations')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    console.log(`✅ ${participations.length} participations récupérées depuis Supabase`)
 
     res.json({ success: true, participations })
   } catch (error) {
@@ -74,8 +88,8 @@ router.get('/participations', auth, (req, res) => {
   }
 })
 
-// ✅ Valider une récompense (scanner QR)
-router.post('/validate', auth, (req, res) => {
+// ✅ Valider une récompense (scanner QR) - MET À JOUR SUPABASE
+router.post('/validate', auth, async (req, res) => {
   try {
     const { code } = req.body
 
@@ -86,27 +100,39 @@ router.post('/validate', auth, (req, res) => {
       })
     }
 
-    // Chercher la participation
-    const participation = db.prepare(`
-      SELECT * FROM participations 
-      WHERE reward_code = ?
-    `).get(code)
+    // ☁️ SUPABASE: Chercher la participation
+    const { data: participation, error: fetchError } = await supabase
+      .from('participations')
+      .select('*')
+      .eq('reward_code', code)
+      .single()
 
-    if (!participation) {
+    if (fetchError || !participation) {
       return res.status(404).json({
         success: false,
         message: 'Code invalide'
       })
     }
 
-    if (participation.reward_used === 1) {
+    if (participation.reward_used === true) {
       return res.status(400).json({
         success: false,
         message: 'Récompense déjà utilisée'
       })
     }
 
-    // Marquer comme utilisée
+    // ☁️ SUPABASE: Marquer comme utilisée
+    const { error: updateError } = await supabase
+      .from('participations')
+      .update({ 
+        reward_used: true,
+        used_at: new Date().toISOString()
+      })
+      .eq('reward_code', code)
+
+    if (updateError) throw updateError
+
+    // SQLite: Update local aussi (backup)
     db.prepare(`
       UPDATE participations 
       SET reward_used = 1,
