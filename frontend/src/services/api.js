@@ -1,14 +1,13 @@
 import axios from 'axios'
 
-// URL de l'API (backend)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-
+// En production (Vercel), utilise l'URL du backend Render via VITE_API_URL
+// En développement local, utilise localhost:3000
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json'
   },
-  withCredentials: false
+  withCredentials: true
 })
 
 export default api

@@ -14,12 +14,17 @@ function VerifyReview() {
   useEffect(() => {
     const storedSessionId = localStorage.getItem('sessionId')
     
+    console.log('🔍 SessionId dans localStorage:', storedSessionId)
+    
     if (!storedSessionId) {
+      console.log('❌ Pas de sessionId, redirection vers accueil')
+      alert('Session expirée. Veuillez recommencer depuis le début.')
       navigate('/')
       return
     }
     
     setSessionId(storedSessionId)
+    console.log('✅ SessionId chargé:', storedSessionId)
   }, [navigate])
 
   const handleSubmit = async (e) => {
@@ -30,6 +35,9 @@ function VerifyReview() {
       return
     }
 
+    console.log('📤 Envoi de la vérification avec sessionId:', sessionId)
+    console.log('📤 Lien:', reviewLink)
+
     setLoading(true)
     setError('')
 
@@ -39,12 +47,17 @@ function VerifyReview() {
         reviewLink
       })
 
+      console.log('✅ Réponse reçue:', response.data)
+
       if (response.data.success) {
+        alert('✅ Avis vérifié ! Vous pouvez maintenant tourner la roue.')
         // Rediriger vers la roue
         navigate('/wheel')
       }
     } catch (error) {
-      setError(error.response?.data?.message || 'Lien invalide')
+      console.error('❌ Erreur lors de la vérification:', error)
+      console.error('Détails:', error.response?.data)
+      setError(error.response?.data?.message || 'Lien invalide ou session expirée. Veuillez recommencer.')
     } finally {
       setLoading(false)
     }
