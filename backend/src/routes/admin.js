@@ -93,6 +93,8 @@ router.post('/validate', auth, async (req, res) => {
   try {
     const { code } = req.body
 
+    console.log('🔍 Tentative de validation du code:', code)
+
     if (!code) {
       return res.status(400).json({
         success: false,
@@ -105,16 +107,28 @@ router.post('/validate', auth, async (req, res) => {
       .from('participations')
       .select('*')
       .eq('reward_code', code)
-      .single()
+      .maybeSingle() // Changé de .single() à .maybeSingle() pour éviter les erreurs
 
-    if (fetchError || !participation) {
+    console.log('📦 Résultat Supabase:', { participation, error: fetchError })
+
+    if (fetchError) {
+      console.error('❌ Erreur Supabase fetch:', fetchError)
+      return res.status(500).json({
+        success: false,
+        message: 'Erreur lors de la recherche du code'
+      })
+    }
+
+    if (!participation) {
+      console.log('❌ Code non trouvé:', code)
       return res.status(404).json({
         success: false,
-        message: 'Code invalide'
+        message: 'Code invalide ou introuvable'
       })
     }
 
     if (participation.reward_used === true) {
+      console.log('⚠️ Code déjà utilisé:', code)
       return res.status(400).json({
         success: false,
         message: 'Récompense déjà utilisée'
@@ -130,17 +144,29 @@ router.post('/validate', auth, async (req, res) => {
       })
       .eq('reward_code', code)
 
-    if (updateError) throw updateError
+    if (updateError) {
+      console.error('❌ Erreur Supabase update:', updateError)
+      return res.status(500).json({
+        success: false,
+        message: 'Erreur lors de la validation'
+      })
+    }
 
-    // SQLite: Update local aussi (backup)
-    db.prepare(`
-      UPDATE participations 
-      SET reward_used = 1,
-          used_at = CURRENT_TIMESTAMP
-      WHERE reward_code = ?
-    `).run(code)
+    // SQLite: Update local aussi (backup) - Avec gestion d'erreur
+    try {
+      const stmt = db.prepare(`
+        UPDATE participations 
+        SET reward_used = 1,
+            used_at = CURRENT_TIMESTAMP
+        WHERE reward_code = ?
+      `)
+      stmt.run(code)
+    } catch (sqliteError) {
+      console.warn('⚠️ SQLite update failed (non-bloquant):', sqliteError.message)
+      // On continue quand même car Supabase est la source de vérité
+    }
 
-    console.log('✅ Récompense validée:', code)
+    console.log('✅ Récompense validée avec succès:', code)
 
     res.json({
       success: true,
@@ -149,8 +175,12 @@ router.post('/validate', auth, async (req, res) => {
     })
 
   } catch (error) {
-    console.error('Erreur validation:', error)
-    res.status(500).json({ success: false, message: 'Erreur serveur' })
+    console.error('❌ Erreur validation complète:', error)
+    res.status(500).json({ 
+      success: false, 
+      message: 'Erreur serveur interne',
+      details: error.message 
+    })
   }
 })
 
