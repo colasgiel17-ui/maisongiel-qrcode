@@ -9,6 +9,7 @@ const db = require('./database')
 const reviewRoutes = require('./routes/reviews')
 const rewardRoutes = require('./routes/rewards')
 const adminRoutes = require('./routes/admin')
+const clientsRoutes = require('./routes/clients')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -55,8 +56,9 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 
 // Routes API
 app.use('/api/reviews', reviewRoutes)
-app.use('/api/rewards', rewardRoutes)
+app.use('/api/rewards', rewardRoutes) // Garde l'ancien fonctionnement temporairement
 app.use('/api/admin', adminRoutes)
+app.use('/api/clients', clientsRoutes) // Nouvelle route Supabase
 
 // Route de test
 app.get('/api/health', (req, res) => {
