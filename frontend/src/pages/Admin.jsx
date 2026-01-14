@@ -72,31 +72,39 @@ function Admin() {
 
       scanner.render(async (decodedText) => {
         scanner.clear()
-        
-        try {
-          const token = localStorage.getItem('adminToken')
-          const response = await axios.post(
-            '/api/admin/validate',
-            { code: decodedText },
-            { headers: { Authorization: `Bearer ${token}` } }
-          )
-
-          if (response.data.success) {
-            setScanResult({
-              success: true,
-              name: response.data.name,
-              reward: response.data.reward
-            })
-            loadData()
-          }
-        } catch (error) {
-          setScanResult({
-            success: false,
-            message: error.response?.data?.message || 'Erreur'
-          })
-        }
+        handleScanSuccess(decodedText)
       })
     }, 100)
+  }
+
+  const handleScanSuccess = async (decodedText) => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      const result = await axios.post(
+        '/api/admin/validate', 
+        { code: decodedText },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+
+      if (result.data.success) {
+        setScanResult({
+          success: true,
+          name: result.data.name,
+          reward: result.data.reward
+        })
+        setShowScanner(false)
+        
+        // ✅ Rafraîchir la liste après validation
+        setTimeout(() => {
+          loadData()
+        }, 500)
+      }
+    } catch (error) {
+      setScanResult({
+        success: false,
+        message: error.response?.data?.message || 'Erreur de validation'
+      })
+    }
   }
 
   const closeScanner = () => {
