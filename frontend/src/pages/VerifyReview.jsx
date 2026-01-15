@@ -88,7 +88,16 @@ function VerifyReview() {
             <div className="info-box">
               <p><strong>📌 Comment obtenir le lien ?</strong></p>
               <ol>
-                <li>Sur Google Maps, laissez votre avis</li>
+                <li>
+                  Sur Google Maps, laissez votre avis
+                  <button 
+                    type="button"
+                    className="btn-open-maps"
+                    onClick={() => window.open('https://www.google.com/maps/place/Boulangerie+P%C3%A2tisserie+Maison+Giel+Saint-Yrieix-Sur-Charente/@45.6771244,0.1212354,601m/data=!3m2!1e3!4b1!4m6!3m5!1s0x47fe2fcf4f8a3a2b:0xdd9957b5f6e04651!8m2!3d45.6771244!4d0.1212354!16s%2Fg%2F11w4xsl4_r?entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoASAFQAw%3D%3D', '_blank')}
+                  >
+                    🗺️ Ouvrir Google Maps
+                  </button>
+                </li>
                 <li>Cliquez sur "Partager" ou les 3 points</li>
                 <li>Copiez le lien de partage</li>
                 <li>Collez-le ici</li>
