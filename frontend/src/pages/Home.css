@@ -220,61 +220,43 @@
   transform: scale(0.95);
 }
 
-/* Affichage récompense existante */
-.existing-reward-display {
-  margin: 1.5rem 0;
-  animation: slideUp 0.5s ease;
-}
-
-.reward-recap {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+.existing-reward-box {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 2rem;
   border-radius: 1.5rem;
   text-align: center;
-  margin-top: 1rem;
-  border: 2px solid var(--success-color);
+  margin: 2rem 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border: 3px solid var(--primary-color);
 }
 
-.reward-recap h3 {
+.existing-reward-box h3 {
   font-size: 1.75rem;
   color: var(--primary-color);
-  margin-bottom: 0.5rem;
-}
-
-.reward-name {
-  color: var(--text-secondary);
   margin-bottom: 1.5rem;
-  font-size: 1.125rem;
+  font-weight: 800;
 }
 
-.qr-code-container {
+.qr-display {
   background: white;
   padding: 1.5rem;
   border-radius: 1rem;
   display: inline-block;
+  margin: 1rem 0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .reward-code {
-  margin-top: 1rem;
   font-size: 1.25rem;
-  font-weight: 700;
   color: var(--text-primary);
+  margin: 1rem 0;
+  font-weight: 700;
 }
 
-.status-valid {
-  color: var(--success-color);
-  font-weight: 600;
-  margin-top: 0.5rem;
-  font-size: 1rem;
-}
-
-.status-used {
+.reward-info {
   color: var(--text-secondary);
-  font-weight: 600;
-  margin-top: 0.5rem;
   font-size: 1rem;
-  text-decoration: line-through;
+  margin-top: 1rem;
 }
 
 /* Responsive */

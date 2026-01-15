@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { QRCodeSVG } from 'qrcode.react'
 import axios from '../services/api'
 import Footer from '../components/Footer'
 import './Home.css'
@@ -11,6 +12,7 @@ function Home() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [existingReward, setExistingReward] = useState(null)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -55,8 +57,15 @@ function Home() {
       console.error('❌ Erreur lors de la participation:', error)
       console.error('Détails:', error.response?.data)
       
-      // Message spécifique si l'email existe déjà
-      if (error.response?.status === 400 && error.response?.data?.message?.includes('déjà participé')) {
+      // Si l'email existe déjà, afficher le QR code existant sur place
+      if (error.response?.status === 400 && error.response?.data?.existingCode) {
+        setExistingReward({
+          code: error.response.data.existingCode,
+          type: error.response.data.rewardType,
+          name: error.response.data.name
+        })
+        setError('⚠️ Cet email a déjà été utilisé. Voici votre QR code existant :')
+      } else if (error.response?.status === 400 && error.response?.data?.message?.includes('déjà participé')) {
         setError('⚠️ Cet email a déjà été utilisé. Vous ne pouvez participer qu\'une seule fois.')
       } else {
         setError(error.response?.data?.message || 'Une erreur est survenue. Veuillez réessayer.')
@@ -115,10 +124,31 @@ function Home() {
 
                 {error && <div className="error-message">{error}</div>}
 
+                {/* Afficher le QR Code existant si l'email est déjà utilisé */}
+                {existingReward && (
+                  <div className="existing-reward-box">
+                    <h3>🎁 {existingReward.type}</h3>
+                    <div className="qr-display">
+                      <QRCodeSVG 
+                        value={existingReward.code}
+                        size={200}
+                        level="H"
+                        includeMargin={true}
+                      />
+                    </div>
+                    <p className="reward-code">
+                      <strong>Code :</strong> {existingReward.code}
+                    </p>
+                    <p className="reward-info">
+                      Présentez ce QR code en magasin pour récupérer votre récompense !
+                    </p>
+                  </div>
+                )}
+
                 <button 
                   type="submit" 
                   className="btn btn-primary btn-block"
-                  disabled={loading}
+                  disabled={loading || existingReward}
                 >
                   {loading ? 'Chargement...' : '🚀 Participer'}
                 </button>

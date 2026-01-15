@@ -13,8 +13,6 @@ router.post('/start', async (req, res) => {
   try {
     const { name, email } = req.body
 
-    console.log('📝 Tentative d\'inscription:', { name, email })
-
     if (!name || !email) {
       return res.status(400).json({ success: false, message: 'Nom et email requis' })
     }
@@ -23,84 +21,52 @@ router.post('/start', async (req, res) => {
     const { data: existingSupabase, error: checkError } = await supabase
       .from('participations')
       .select('*')
-      .eq('email', email.toLowerCase())
-      .limit(1)
+      .eq('email', email)
+      .single()
 
-    console.log('🔍 Vérification Supabase:', { 
-      found: existingSupabase?.length > 0, 
-      error: checkError?.message 
-    })
-
-    if (checkError) {
-      console.error('❌ Erreur Supabase check:', checkError)
-      // Continue quand même pour ne pas bloquer l'utilisateur
-    }
-
-    if (existingSupabase && existingSupabase.length > 0) {
-      const existing = existingSupabase[0]
-      console.log('⚠️ Email déjà utilisé, renvoi des données existantes:', email)
+    if (existingSupabase) {
+      console.log('❌ Email déjà utilisé (trouvé dans Supabase):', email)
       
-      // Si l'utilisateur a déjà une récompense, on lui renvoie
-      if (existing.reward_code && existing.reward_type) {
-        return res.json({ 
-          success: true,
-          alreadyParticipated: true,
-          sessionId: existing.user_id,
-          reward: {
-            label: existing.reward_type,
-            code: existing.reward_code,
-            name: existing.name,
-            used: existing.reward_used
-          },
-          message: 'Vous avez déjà participé ! Voici votre récompense.'
-        })
-      } else {
-        // Si pas encore de récompense, on lui permet de continuer
-        return res.json({
-          success: true,
-          sessionId: existing.user_id,
-          googleMapsUrl: 'https://www.google.com/maps/place/Boulangerie+P%C3%A2tisserie+Maison+Giel+Saint-Yrieix-Sur-Charente/@45.6771281,0.1186605,601m/data=!3m2!1e3!4b1!4m6!3m5!1s0x47fe2fcf4f8a3a2b:0xdd9957b5f6e04651!8m2!3d45.6771244!4d0.1212354!16s%2Fg%2F11w4xsl4_r?entry=ttu&g_ep=EgoyMDI2MDEwNy4wIKXMDSoASAFQAw%3D%3D',
-          message: 'Continuez votre participation en cours...'
+      // Si l'utilisateur a déjà un code, le renvoyer
+      if (existingSupabase.reward_code) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Vous avez déjà participé avec cet email',
+          existingCode: existingSupabase.reward_code,
+          rewardType: existingSupabase.reward_type,
+          name: existingSupabase.name
         })
       }
+      
+      // Sinon, juste bloquer
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Vous avez déjà participé avec cet email' 
+      })
     }
 
     const sessionId = generateCode()
 
-    console.log('✅ Nouveau participant, création du compte:', sessionId)
+    // SQLite: Insert (backup local)
+    db.prepare(`
+      INSERT INTO participations (user_id, name, email, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+    `).run(sessionId, name, email)
 
-    // ☁️ SUPABASE: Insert (Source de vérité principale) - EN PREMIER
-    const { data: insertedData, error: insertError } = await supabase
+    // ☁️ SUPABASE: Insert (Source de vérité principale)
+    const { error: insertError } = await supabase
       .from('participations')
       .insert({
         user_id: sessionId,
         name,
-        email: email.toLowerCase(), // Normaliser en minuscules
+        email,
         created_at: new Date().toISOString()
       })
-      .select()
 
     if (insertError) {
-      console.error('⚠️ Erreur Supabase Insert:', insertError.message)
-      // Si c'est une erreur de duplicate email, bloquer
-      if (insertError.code === '23505') { // PostgreSQL duplicate key error
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Vous avez déjà participé avec cet email' 
-        })
-      }
+      console.error('⚠️ Erreur Supabase Start:', insertError.message)
+      // Continuer quand même pour ne pas bloquer l'utilisateur
     } else {
       console.log('✅ Client créé dans Supabase:', email)
-    }
-
-    // SQLite: Insert (backup local) - APRES Supabase
-    try {
-      db.prepare(`
-        INSERT INTO participations (user_id, name, email, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-      `).run(sessionId, name, email.toLowerCase())
-    } catch (sqliteError) {
-      console.warn('⚠️ SQLite insert failed (non-bloquant):', sqliteError.message)
-      // On continue car Supabase est la source de vérité
     }
 
     res.json({
