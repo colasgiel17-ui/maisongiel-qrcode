@@ -8,16 +8,33 @@ function Reward() {
   const location = useLocation()
   const navigate = useNavigate()
   const [copied, setCopied] = useState(false)
-
-  const reward = location.state?.reward
-  const code = location.state?.code
-  const name = location.state?.name
+  const [reward, setReward] = useState(null)
+  const [code, setCode] = useState(null)
+  const [userName, setUserName] = useState(null)
 
   useEffect(() => {
-    if (!reward || !code) {
-      navigate('/')
+    const storedReward = localStorage.getItem('rewardType')
+    const storedCode = localStorage.getItem('rewardCode')
+    const storedName = localStorage.getItem('userName')
+
+    // Si les données sont dans le localStorage (utilisateur déjà participant)
+    if (storedReward && storedCode && storedName) {
+      setReward(storedReward)
+      setCode(storedCode)
+      setUserName(storedName)
+      return
     }
-  }, [reward, code, navigate])
+
+    // Sinon, récupérer depuis l'état de navigation
+    if (!location.state) {
+      navigate('/')
+      return
+    }
+
+    setReward(location.state.reward)
+    setCode(location.state.code)
+    setUserName(location.state.name)
+  }, [location, navigate])
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code)
@@ -37,7 +54,7 @@ function Reward() {
         >
           <div className="confetti">🎉🎊✨🎁🌟</div>
           
-          <h1 className="reward-title">Félicitations {name} !</h1>
+          <h1 className="reward-title">Félicitations {userName} !</h1>
           <p className="reward-subtitle">Vous avez gagné :</p>
 
           <div className="reward-prize">

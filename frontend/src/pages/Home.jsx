@@ -29,6 +29,10 @@ function Home() {
 
         // Cas 1 : Utilisateur déjà participant avec récompense
         if (response.data.alreadyParticipated && response.data.reward?.code) {
+          // Sauvegarder les données de récompense
+          localStorage.setItem('rewardType', response.data.reward.type)
+          localStorage.setItem('rewardCode', response.data.reward.code)
+          
           alert('✅ ' + response.data.message)
           navigate('/reward')
         } 
