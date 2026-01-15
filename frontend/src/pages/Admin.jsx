@@ -115,6 +115,40 @@ function Admin() {
     setScanResult(null)
   }
 
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      const response = await axios.get('/api/admin/stats', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setStats(response.data.stats)
+    } catch (error) {
+      console.error('Erreur stats:', error)
+      // Si erreur 403 ou 401 (non autorisé), déconnecter
+      if (error.response?.status === 403 || error.response?.status === 401) {
+        console.log('Session expirée, déconnexion...')
+        handleLogout()
+      }
+    }
+  }
+
+  const fetchParticipations = async () => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      const response = await axios.get('/api/admin/participations', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setParticipations(response.data.participations)
+    } catch (error) {
+      console.error('Erreur participations:', error)
+      // Si erreur 403 ou 401 (non autorisé), déconnecter
+      if (error.response?.status === 403 || error.response?.status === 401) {
+        console.log('Session expirée, déconnexion...')
+        handleLogout()
+      }
+    }
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="page admin-page">
