@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Html5QrcodeScanner } from 'html5-qrcode'
 import axios from '../services/api'
 import './Admin.css'
+import { motion } from 'framer-motion'
 
 function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -12,6 +13,7 @@ function Admin() {
   const [participations, setParticipations] = useState([])
   const [showScanner, setShowScanner] = useState(false)
   const [scanResult, setScanResult] = useState(null)
+  const [validationResult, setValidationResult] = useState(null)
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
@@ -87,7 +89,7 @@ function Admin() {
       )
 
       if (response.data.success) {
-        setScanResult({
+        setValidationResult({
           success: true,
           name: response.data.name,
           reward: response.data.reward
@@ -99,7 +101,7 @@ function Admin() {
         }, 1000)
       }
     } catch (error) {
-      setScanResult({
+      setValidationResult({
         success: false,
         message: error.response?.data?.message || 'Erreur'
       })
@@ -265,6 +267,35 @@ function Admin() {
               )}
             </div>
           </div>
+        )}
+
+        {validationResult && (
+          <motion.div
+            className={`validation-result ${validationResult.success ? 'success' : 'error'}`}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            {validationResult.success ? (
+              <>
+                <h2>✅ Récompense Validée !</h2>
+                <div className="validation-details">
+                  <p className="customer-name">👤 {validationResult.name}</p>
+                  <p className="reward-won">🎁 {validationResult.reward}</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2>❌ Erreur</h2>
+                <p>{validationResult.message}</p>
+              </>
+            )}
+            <button 
+              className="btn btn-primary"
+              onClick={() => setValidationResult(null)}
+            >
+              OK
+            </button>
+          </motion.div>
         )}
       </div>
     </div>

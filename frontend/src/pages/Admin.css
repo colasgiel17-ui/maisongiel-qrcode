@@ -630,3 +630,70 @@ code {
     padding: 1rem;
   }
 }
+
+/* Styles pour la popup de validation QR */
+.validation-result {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 3rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  z-index: 10000;
+  min-width: 400px;
+  text-align: center;
+}
+
+.validation-result::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: -1;
+}
+
+.validation-result.success h2 {
+  color: var(--success-color);
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.validation-result.error h2 {
+  color: var(--error-color);
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.validation-details {
+  background: var(--bg-secondary);
+  padding: 2rem;
+  border-radius: 1rem;
+  margin: 2rem 0;
+}
+
+.customer-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.reward-won {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  background: linear-gradient(135deg, #FF6B6B, #FFA07A);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.validation-result .btn {
+  margin-top: 1.5rem;
+  min-width: 150px;
+}
