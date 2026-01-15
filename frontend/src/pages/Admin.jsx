@@ -1,24 +1,24 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Html5QrcodeScanner } from 'html5-qrcode'
 import axios from '../services/api'
 import './Admin.css'
-import { motion } from 'framer-motion'
 
 function Admin() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const navigate = useNavigate()
+  const [authenticated, setAuthenticated] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [stats, setStats] = useState(null)
   const [participations, setParticipations] = useState([])
-  const [showScanner, setShowScanner] = useState(false)
-  const [scanResult, setScanResult] = useState(null)
+  const [scanning, setScanning] = useState(false)
   const [validationResult, setValidationResult] = useState(null)
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
     if (token) {
-      setIsAuthenticated(true)
+      setAuthenticated(true)
       loadData()
     }
   }, [])
@@ -32,7 +32,7 @@ function Admin() {
       
       if (response.data.success) {
         localStorage.setItem('adminToken', response.data.token)
-        setIsAuthenticated(true)
+        setAuthenticated(true)
         loadData()
       }
     } catch (error) {
@@ -59,12 +59,12 @@ function Admin() {
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken')
-    setIsAuthenticated(false)
+    setAuthenticated(false)
   }
 
   const startScanner = () => {
-    setShowScanner(true)
-    setScanResult(null)
+    setScanning(true)
+    setValidationResult(null)
 
     setTimeout(() => {
       const scanner = new Html5QrcodeScanner('qr-reader', {
@@ -80,76 +80,43 @@ function Admin() {
   }
 
   const handleScan = async (decodedText) => {
+    console.log('QR Code scanné:', decodedText)
+    
     try {
       const token = localStorage.getItem('adminToken')
-      const response = await axios.post(
-        '/api/admin/validate', 
+      const response = await axios.post('/api/admin/validate', 
         { code: decodedText },
         { headers: { Authorization: `Bearer ${token}` } }
       )
 
       if (response.data.success) {
+        // Afficher le résultat dans une modale
         setValidationResult({
           success: true,
           name: response.data.name,
           reward: response.data.reward
         })
         
-        // ✅ NOUVEAU : Rafraîchir automatiquement la liste après validation
-        setTimeout(() => {
-          loadData()
-        }, 1000)
+        // Rafraîchir les stats
+        loadData()
+        
+        // Arrêter le scan
+        setScanning(false)
       }
     } catch (error) {
       setValidationResult({
         success: false,
-        message: error.response?.data?.message || 'Erreur'
+        message: error.response?.data?.message || 'Erreur lors de la validation'
       })
-    } finally {
-      setShowScanner(false)
     }
   }
 
   const closeScanner = () => {
-    setShowScanner(false)
-    setScanResult(null)
+    setScanning(false)
+    setValidationResult(null)
   }
 
-  const fetchStats = async () => {
-    try {
-      const token = localStorage.getItem('adminToken')
-      const response = await axios.get('/api/admin/stats', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      setStats(response.data.stats)
-    } catch (error) {
-      console.error('Erreur stats:', error)
-      // Si erreur 403 ou 401 (non autorisé), déconnecter
-      if (error.response?.status === 403 || error.response?.status === 401) {
-        console.log('Session expirée, déconnexion...')
-        handleLogout()
-      }
-    }
-  }
-
-  const fetchParticipations = async () => {
-    try {
-      const token = localStorage.getItem('adminToken')
-      const response = await axios.get('/api/admin/participations', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      setParticipations(response.data.participations)
-    } catch (error) {
-      console.error('Erreur participations:', error)
-      // Si erreur 403 ou 401 (non autorisé), déconnecter
-      if (error.response?.status === 403 || error.response?.status === 401) {
-        console.log('Session expirée, déconnexion...')
-        handleLogout()
-      }
-    }
-  }
-
-  if (!isAuthenticated) {
+  if (!authenticated) {
     return (
       <div className="page admin-page">
         <div className="container">
@@ -269,7 +236,7 @@ function Admin() {
           </div>
         </div>
 
-        {showScanner && (
+        {scanning && (
           <div className="modal-overlay" onClick={closeScanner}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
@@ -277,59 +244,45 @@ function Admin() {
                 <button className="close-btn" onClick={closeScanner}>✕</button>
               </div>
               
-              {!scanResult ? (
-                <div id="qr-reader"></div>
-              ) : scanResult.success ? (
-                <div className="scan-success">
-                  <div className="success-icon">✅</div>
-                  <h3>Récompense validée !</h3>
-                  <p><strong>Client :</strong> {scanResult.name}</p>
-                  <p><strong>Récompense :</strong> {scanResult.reward}</p>
-                  <button className="btn btn-primary" onClick={closeScanner}>
-                    Fermer
-                  </button>
-                </div>
-              ) : (
-                <div className="scan-error">
-                  <div className="error-icon">❌</div>
-                  <h3>Erreur</h3>
-                  <p>{scanResult.message}</p>
-                  <button className="btn btn-primary" onClick={startScanner}>
-                    Réessayer
-                  </button>
-                </div>
-              )}
+              <div id="qr-reader"></div>
             </div>
           </div>
         )}
 
+        {/* Modale de résultat de validation */}
         {validationResult && (
-          <motion.div
-            className={`validation-result ${validationResult.success ? 'success' : 'error'}`}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-          >
-            {validationResult.success ? (
-              <>
-                <h2>✅ Récompense Validée !</h2>
-                <div className="validation-details">
-                  <p className="customer-name">👤 {validationResult.name}</p>
-                  <p className="reward-won">🎁 {validationResult.reward}</p>
-                </div>
-              </>
-            ) : (
-              <>
-                <h2>❌ Erreur</h2>
-                <p>{validationResult.message}</p>
-              </>
-            )}
-            <button 
-              className="btn btn-primary"
-              onClick={() => setValidationResult(null)}
-            >
-              OK
-            </button>
-          </motion.div>
+          <div className="validation-modal-overlay" onClick={() => setValidationResult(null)}>
+            <div className="validation-modal" onClick={(e) => e.stopPropagation()}>
+              {validationResult.success ? (
+                <>
+                  <div className="validation-icon success">✅</div>
+                  <h2>Récompense validée !</h2>
+                  <div className="validation-details">
+                    <p className="customer-name">👤 {validationResult.name}</p>
+                    <p className="reward-type">🎁 {validationResult.reward}</p>
+                  </div>
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => setValidationResult(null)}
+                  >
+                    OK
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="validation-icon error">❌</div>
+                  <h2>Erreur</h2>
+                  <p className="error-text">{validationResult.message}</p>
+                  <button 
+                    className="btn btn-outline"
+                    onClick={() => setValidationResult(null)}
+                  >
+                    Réessayer
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </div>
