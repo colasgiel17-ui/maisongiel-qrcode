@@ -2,44 +2,65 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import axios from '../services/api'
-import { QRCodeSVG } from 'qrcode.react'
 import Footer from '../components/Footer'
 import './Home.css'
 
 function Home() {
+  const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [existingReward, setExistingReward] = useState(null)
-  const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    if (!name || !email) {
+      setError('Veuillez remplir tous les champs')
+      return
+    }
+
     setLoading(true)
     setError('')
-    setExistingReward(null)
 
     try {
+      console.log('📤 Envoi de la demande de participation:', { name, email })
+
+      // Étape 1 : Créer la session (le backend vérifie l'email dans Supabase)
       const response = await axios.post('/api/rewards/start', { name, email })
-      
+
+      console.log('✅ Réponse reçue:', response.data)
+
       if (response.data.success) {
-        localStorage.setItem('sessionId', response.data.sessionId)
+        const { sessionId, googleMapsUrl } = response.data
         
-        // Si l'utilisateur a déjà participé et a une récompense
-        if (response.data.alreadyParticipated && response.data.reward) {
-          setExistingReward(response.data.reward)
-        } else {
-          // Ouvrir Google Maps dans un nouvel onglet
-          if (response.data.googleMapsUrl) {
-            window.open(response.data.googleMapsUrl, '_blank')
-          }
-          // Rediriger vers la page de vérification
+        // Sauvegarder dans localStorage
+        localStorage.setItem('sessionId', sessionId)
+        localStorage.setItem('userName', name)
+        
+        console.log('💾 SessionId sauvegardé:', sessionId)
+        
+        // Ouvrir Google Maps dans un nouvel onglet
+        window.open(googleMapsUrl, '_blank')
+        
+        // Afficher le message
+        alert('✅ Une nouvelle fenêtre s\'est ouverte. Laissez votre avis puis revenez ici pour continuer !')
+        
+        // Rediriger vers la page de vérification
+        setTimeout(() => {
           navigate('/verify-review')
-        }
+        }, 1000)
       }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Une erreur est survenue')
+    } catch (error) {
+      console.error('❌ Erreur lors de la participation:', error)
+      console.error('Détails:', error.response?.data)
+      
+      // Message spécifique si l'email existe déjà
+      if (error.response?.status === 400 && error.response?.data?.message?.includes('déjà participé')) {
+        setError('⚠️ Cet email a déjà été utilisé. Vous ne pouvez participer qu\'une seule fois.')
+      } else {
+        setError(error.response?.data?.message || 'Une erreur est survenue. Veuillez réessayer.')
+      }
     } finally {
       setLoading(false)
     }
@@ -93,33 +114,6 @@ function Home() {
                 </div>
 
                 {error && <div className="error-message">{error}</div>}
-
-                {/* Affichage de la récompense existante */}
-                {existingReward && (
-                  <div className="existing-reward-display">
-                    <div className="success-message">
-                      ✅ Vous avez déjà participé ! Voici votre récompense :
-                    </div>
-                    <div className="reward-recap">
-                      <h3>🎁 {existingReward.label}</h3>
-                      <p className="reward-name">Pour : {existingReward.name}</p>
-                      <div className="qr-code-container">
-                        <QRCodeSVG 
-                          value={existingReward.code} 
-                          size={200}
-                          level="H"
-                          includeMargin={true}
-                        />
-                        <p className="reward-code">Code : {existingReward.code}</p>
-                        {existingReward.used ? (
-                          <p className="status-used">✓ Déjà utilisé</p>
-                        ) : (
-                          <p className="status-valid">✓ Valide en magasin</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 <button 
                   type="submit" 
