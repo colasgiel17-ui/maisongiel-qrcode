@@ -14,36 +14,31 @@ function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    if (!name || !email) {
-      setError('Veuillez remplir tous les champs')
-      return
-    }
-
     setLoading(true)
     setError('')
 
     try {
-      // Étape 1 : Créer la session
-      const response = await axios.post('/api/rewards/start', { name, email })
+      const response = await axios.post('/api/rewards/start', {
+        name,
+        email
+      })
 
       if (response.data.success) {
-        const { sessionId, googleMapsUrl } = response.data
-        
-        // Sauvegarder dans localStorage
-        localStorage.setItem('sessionId', sessionId)
+        localStorage.setItem('sessionId', response.data.sessionId)
         localStorage.setItem('userName', name)
-        
-        // Ouvrir Google Maps dans un nouvel onglet
-        window.open(googleMapsUrl, '_blank')
-        
-        // Afficher le message
-        alert('✅ Une nouvelle fenêtre s\'est ouverte. Laissez votre avis puis revenez ici pour continuer !')
-        
-        // Rediriger vers la page de vérification
-        setTimeout(() => {
-          navigate('/verify-review')
-        }, 1000)
+
+        // Cas 1 : Utilisateur déjà participant avec récompense
+        if (response.data.alreadyParticipated && response.data.reward?.code) {
+          alert('✅ ' + response.data.message)
+          navigate('/reward')
+        } 
+        // Cas 2 : Nouvel utilisateur
+        else {
+          window.open(response.data.googleMapsUrl, '_blank')
+          setTimeout(() => {
+            navigate('/verify-review')
+          }, 500)
+        }
       }
     } catch (error) {
       setError(error.response?.data?.message || 'Une erreur est survenue')

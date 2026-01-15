@@ -37,10 +37,19 @@ router.post('/start', async (req, res) => {
     }
 
     if (existingSupabase && existingSupabase.length > 0) {
-      console.log('❌ Email déjà utilisé (trouvé dans Supabase):', email)
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Vous avez déjà participé avec cet email. Chaque personne ne peut participer qu\'une seule fois.' 
+      console.log('ℹ️ Email déjà utilisé, renvoi des données existantes:', email)
+      const existing = existingSupabase[0]
+      
+      return res.json({ 
+        success: true,
+        alreadyParticipated: true,
+        sessionId: existing.user_id,
+        reward: {
+          type: existing.reward_type,
+          code: existing.reward_code,
+          name: existing.name
+        },
+        message: 'Vous avez déjà participé ! Voici votre récompense.' 
       })
     }
 
