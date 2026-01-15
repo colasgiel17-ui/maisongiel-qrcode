@@ -72,44 +72,38 @@ function Admin() {
 
       scanner.render(async (decodedText) => {
         scanner.clear()
-        handleScanSuccess(decodedText)
+        handleScan(decodedText)
       })
     }, 100)
   }
 
-  const handleScanSuccess = async (decodedText) => {
-    console.log('🔍 QR Code scanné:', decodedText)
-    
+  const handleScan = async (decodedText) => {
     try {
       const token = localStorage.getItem('adminToken')
-      const result = await axios.post(
+      const response = await axios.post(
         '/api/admin/validate', 
         { code: decodedText },
         { headers: { Authorization: `Bearer ${token}` } }
       )
 
-      console.log('✅ Résultat validation:', result.data)
-
-      if (result.data.success) {
+      if (response.data.success) {
         setScanResult({
           success: true,
-          name: result.data.name,
-          reward: result.data.reward
+          name: response.data.name,
+          reward: response.data.reward
         })
-        setShowScanner(false)
         
-        // ✅ Rafraîchir la liste après 3 secondes (temps de lire le message)
+        // ✅ NOUVEAU : Rafraîchir automatiquement la liste après validation
         setTimeout(() => {
-          console.log('🔄 Rafraîchissement de la liste...')
           loadData()
-        }, 3000)
+        }, 1000)
       }
     } catch (error) {
-      console.error('❌ Erreur validation:', error)
       setScanResult({
         success: false,
-        message: error.response?.data?.message || 'Erreur de validation'
+        message: error.response?.data?.message || 'Erreur'
       })
+    } finally {
       setShowScanner(false)
     }
   }
