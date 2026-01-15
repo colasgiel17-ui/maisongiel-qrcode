@@ -22,7 +22,7 @@ router.post('/start', async (req, res) => {
     // ☁️ SUPABASE: Vérifier si l'email existe déjà (source de vérité unique)
     const { data: existingSupabase, error: checkError } = await supabase
       .from('participations')
-      .select('email, name, created_at')
+      .select('*')
       .eq('email', email.toLowerCase())
       .limit(1)
 
@@ -37,20 +37,32 @@ router.post('/start', async (req, res) => {
     }
 
     if (existingSupabase && existingSupabase.length > 0) {
-      console.log('ℹ️ Email déjà utilisé, renvoi des données existantes:', email)
       const existing = existingSupabase[0]
+      console.log('⚠️ Email déjà utilisé, renvoi des données existantes:', email)
       
-      return res.json({ 
-        success: true,
-        alreadyParticipated: true,
-        sessionId: existing.user_id,
-        reward: {
-          type: existing.reward_type,
-          code: existing.reward_code,
-          name: existing.name
-        },
-        message: 'Vous avez déjà participé ! Voici votre récompense.' 
-      })
+      // Si l'utilisateur a déjà une récompense, on lui renvoie
+      if (existing.reward_code && existing.reward_type) {
+        return res.json({ 
+          success: true,
+          alreadyParticipated: true,
+          sessionId: existing.user_id,
+          reward: {
+            label: existing.reward_type,
+            code: existing.reward_code,
+            name: existing.name,
+            used: existing.reward_used
+          },
+          message: 'Vous avez déjà participé ! Voici votre récompense.'
+        })
+      } else {
+        // Si pas encore de récompense, on lui permet de continuer
+        return res.json({
+          success: true,
+          sessionId: existing.user_id,
+          googleMapsUrl: 'https://www.google.com/maps/place/Boulangerie+P%C3%A2tisserie+Maison+Giel+Saint-Yrieix-Sur-Charente/@45.6771281,0.1186605,601m/data=!3m2!1e3!4b1!4m6!3m5!1s0x47fe2fcf4f8a3a2b:0xdd9957b5f6e04651!8m2!3d45.6771244!4d0.1212354!16s%2Fg%2F11w4xsl4_r?entry=ttu&g_ep=EgoyMDI2MDEwNy4wIKXMDSoASAFQAw%3D%3D',
+          message: 'Continuez votre participation en cours...'
+        })
+      }
     }
 
     const sessionId = generateCode()

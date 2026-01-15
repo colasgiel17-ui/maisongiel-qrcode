@@ -2,50 +2,44 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import axios from '../services/api'
+import { QRCodeSVG } from 'qrcode.react'
 import Footer from '../components/Footer'
 import './Home.css'
 
 function Home() {
-  const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [existingReward, setExistingReward] = useState(null)
+  const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setExistingReward(null)
 
     try {
-      const response = await axios.post('/api/rewards/start', {
-        name,
-        email
-      })
-
+      const response = await axios.post('/api/rewards/start', { name, email })
+      
       if (response.data.success) {
         localStorage.setItem('sessionId', response.data.sessionId)
-        localStorage.setItem('userName', name)
-
-        // Cas 1 : Utilisateur déjà participant avec récompense
-        if (response.data.alreadyParticipated && response.data.reward?.code) {
-          // Sauvegarder les données de récompense
-          localStorage.setItem('rewardType', response.data.reward.type)
-          localStorage.setItem('rewardCode', response.data.reward.code)
-          
-          alert('✅ ' + response.data.message)
-          navigate('/reward')
-        } 
-        // Cas 2 : Nouvel utilisateur
-        else {
-          window.open(response.data.googleMapsUrl, '_blank')
-          setTimeout(() => {
-            navigate('/verify-review')
-          }, 500)
+        
+        // Si l'utilisateur a déjà participé et a une récompense
+        if (response.data.alreadyParticipated && response.data.reward) {
+          setExistingReward(response.data.reward)
+        } else {
+          // Ouvrir Google Maps dans un nouvel onglet
+          if (response.data.googleMapsUrl) {
+            window.open(response.data.googleMapsUrl, '_blank')
+          }
+          // Rediriger vers la page de vérification
+          navigate('/verify-review')
         }
       }
-    } catch (error) {
-      setError(error.response?.data?.message || 'Une erreur est survenue')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Une erreur est survenue')
     } finally {
       setLoading(false)
     }
@@ -99,6 +93,33 @@ function Home() {
                 </div>
 
                 {error && <div className="error-message">{error}</div>}
+
+                {/* Affichage de la récompense existante */}
+                {existingReward && (
+                  <div className="existing-reward-display">
+                    <div className="success-message">
+                      ✅ Vous avez déjà participé ! Voici votre récompense :
+                    </div>
+                    <div className="reward-recap">
+                      <h3>🎁 {existingReward.label}</h3>
+                      <p className="reward-name">Pour : {existingReward.name}</p>
+                      <div className="qr-code-container">
+                        <QRCodeSVG 
+                          value={existingReward.code} 
+                          size={200}
+                          level="H"
+                          includeMargin={true}
+                        />
+                        <p className="reward-code">Code : {existingReward.code}</p>
+                        {existingReward.used ? (
+                          <p className="status-used">✓ Déjà utilisé</p>
+                        ) : (
+                          <p className="status-valid">✓ Valide en magasin</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <button 
                   type="submit" 
