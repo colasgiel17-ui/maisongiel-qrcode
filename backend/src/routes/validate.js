@@ -43,44 +43,61 @@ router.get('/:code', async (req, res) => {
   }
 });
 
-// ✅ Marquer un code comme utilisé (nécessite confirmation manuelle admin)
+// ✅ Marquer un code comme utilisé (accessible publiquement pour commerçant)
 router.post('/:code/use', async (req, res) => {
   try {
-    const { code } = req.params;
-    const { adminConfirm } = req.body;
+    const { code } = req.params
 
-    // Sécurité: Nécessite une confirmation (à implémenter selon vos besoins)
-    if (!adminConfirm) {
-      return res.status(403).json({
+    console.log('✅ Validation définitive du code:', code)
+
+    // Chercher la participation
+    const { data: participation, error: fetchError } = await supabase
+      .from('participations')
+      .select('*')
+      .eq('reward_code', code)
+      .single()
+
+    if (fetchError || !participation) {
+      return res.status(404).json({
         success: false,
-        message: 'Confirmation requise'
-      });
+        message: 'Code introuvable'
+      })
     }
 
-    const { data, error } = await supabase
+    // Vérifier si déjà utilisé
+    if (participation.reward_used === true) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cette récompense a déjà été utilisée le ' + new Date(participation.used_at).toLocaleString('fr-FR')
+      })
+    }
+
+    // Marquer comme utilisé
+    const { error: updateError } = await supabase
       .from('participations')
       .update({
         reward_used: true,
         used_at: new Date().toISOString()
       })
       .eq('reward_code', code)
-      .select()
-      .single();
 
-    if (error) throw error;
+    if (updateError) throw updateError
+
+    console.log('✅ Récompense validée:', code, 'à', new Date().toISOString())
 
     res.json({
       success: true,
-      message: 'Récompense marquée comme utilisée'
-    });
+      message: 'Récompense validée avec succès',
+      validatedAt: new Date().toISOString()
+    })
 
   } catch (error) {
-    console.error('❌ Erreur marquage utilisé:', error);
+    console.error('❌ Erreur validation:', error)
     res.status(500).json({
       success: false,
       message: 'Erreur serveur'
-    });
+    })
   }
-});
+})
 
-module.exports = router;
+module.exports = router

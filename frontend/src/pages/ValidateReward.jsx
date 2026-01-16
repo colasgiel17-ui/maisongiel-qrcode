@@ -10,6 +10,7 @@ function ValidateReward() {
   const [loading, setLoading] = useState(true)
   const [reward, setReward] = useState(null)
   const [error, setError] = useState(null)
+  const [validating, setValidating] = useState(false)
 
   useEffect(() => {
     const fetchReward = async () => {
@@ -33,6 +34,32 @@ function ValidateReward() {
       fetchReward()
     }
   }, [code])
+
+  const handleValidate = async () => {
+    if (!window.confirm('⚠️ Confirmer l\'utilisation de cette récompense ? Cette action est irréversible.')) {
+      return
+    }
+
+    setValidating(true)
+
+    try {
+      const response = await axios.post(`/api/validate/${code}/use`, {
+        adminConfirm: true
+      })
+
+      if (response.data.success) {
+        // Recharger les données pour afficher "utilisée"
+        const updatedResponse = await axios.get(`/api/validate/${code}`)
+        setReward(updatedResponse.data)
+        alert('✅ Récompense validée avec succès !')
+      }
+    } catch (err) {
+      console.error('❌ Erreur validation:', err)
+      alert(err.response?.data?.message || 'Erreur lors de la validation')
+    } finally {
+      setValidating(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -110,6 +137,14 @@ function ValidateReward() {
                   <p className="reward-instructions">
                     Le commerçant validera cette récompense lors de la remise en magasin
                   </p>
+                  
+                  <button 
+                    onClick={handleValidate}
+                    disabled={validating}
+                    className="btn btn-success btn-validate"
+                  >
+                    {validating ? '⏳ Validation...' : '✅ Valider la récompense'}
+                  </button>
                 </div>
               </>
             )}
