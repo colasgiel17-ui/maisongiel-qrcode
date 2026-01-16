@@ -132,6 +132,18 @@ function ValidateReward() {
                   <p className="reward-type">🎉 {reward.reward}</p>
                   <p className="reward-code">Code : {reward.code}</p>
                 </div>
+
+                {/* QR Code de la page actuelle */}
+                <div className="qr-code-container">
+                  <QRCodeSVG 
+                    value={window.location.href}
+                    size={200}
+                    level="H"
+                    includeMargin={true}
+                  />
+                  <p className="qr-label">Scannez ce QR code</p>
+                </div>
+
                 <div className="reward-message">
                   <p>✅ Cette récompense est valide et peut être utilisée</p>
                   <p className="reward-instructions">
