@@ -8,33 +8,30 @@ function Reward() {
   const location = useLocation()
   const navigate = useNavigate()
   const [copied, setCopied] = useState(false)
-  const [reward, setReward] = useState(null)
-  const [code, setCode] = useState(null)
-  const [userName, setUserName] = useState(null)
+  const [qrCodeValue, setQrCodeValue] = useState('')
+
+  const reward = location.state?.reward
+  const code = location.state?.code
+  const name = location.state?.name
 
   useEffect(() => {
-    const storedReward = localStorage.getItem('rewardType')
-    const storedCode = localStorage.getItem('rewardCode')
-    const storedName = localStorage.getItem('userName')
-
-    // Si les données sont dans le localStorage (utilisateur déjà participant)
-    if (storedReward && storedCode && storedName) {
-      setReward(storedReward)
-      setCode(storedCode)
-      setUserName(storedName)
-      return
+    if (!reward || !code) {
+      navigate('/')
     }
+  }, [reward, code, navigate])
 
-    // Sinon, récupérer depuis l'état de navigation
-    if (!location.state) {
+  useEffect(() => {
+    const code = localStorage.getItem('rewardCode')
+    const type = localStorage.getItem('rewardType')
+    const name = localStorage.getItem('userName')
+
+    if (!code || !type) {
       navigate('/')
       return
     }
 
-    setReward(location.state.reward)
-    setCode(location.state.code)
-    setUserName(location.state.name)
-  }, [location, navigate])
+    setQrCodeValue(`${window.location.origin}/validate/${code}`)
+  }, [navigate])
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code)
@@ -54,7 +51,7 @@ function Reward() {
         >
           <div className="confetti">🎉🎊✨🎁🌟</div>
           
-          <h1 className="reward-title">Félicitations {userName} !</h1>
+          <h1 className="reward-title">Félicitations {name} !</h1>
           <p className="reward-subtitle">Vous avez gagné :</p>
 
           <div className="reward-prize">
@@ -67,7 +64,7 @@ function Reward() {
             </p>
             <div className="qr-container">
               <QRCodeSVG 
-                value={code}
+                value={qrCodeValue}
                 size={250}
                 level="H"
                 includeMargin={true}

@@ -3,13 +3,11 @@ const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')
 const rateLimit = require('express-rate-limit')
-const path = require('path')
 
 const db = require('./database')
-const reviewRoutes = require('./routes/reviews')
-const rewardRoutes = require('./routes/rewards')
+const rewardsRoutes = require('./routes/rewards')
 const adminRoutes = require('./routes/admin')
-const clientsRoutes = require('./routes/clients')
+const validateRoutes = require('./routes/validate')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -51,14 +49,10 @@ app.use('/api/', limiter)
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// Dossier uploads
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
-
 // Routes API
-app.use('/api/reviews', reviewRoutes)
-app.use('/api/rewards', rewardRoutes) // Garde l'ancien fonctionnement temporairement
+app.use('/api/rewards', rewardsRoutes)
 app.use('/api/admin', adminRoutes)
-app.use('/api/clients', clientsRoutes) // Nouvelle route Supabase
+app.use('/api/validate', validateRoutes)
 
 // Route de test
 app.get('/api/health', (req, res) => {
