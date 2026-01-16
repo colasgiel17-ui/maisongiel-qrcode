@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { QRCodeSVG } from 'qrcode.react'
 import axios from '../services/api'
 import Footer from '../components/Footer'
 import './ValidateReward.css'
