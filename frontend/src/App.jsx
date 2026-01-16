@@ -11,7 +11,7 @@ import './App.css'
 function App() {
   return (
     <Router>
-      <div className="app">
+      <div className="App">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/verify-review" element={<VerifyReview />} />
