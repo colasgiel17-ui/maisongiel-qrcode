@@ -52,10 +52,16 @@ function Home() {
       
       // Si l'email existe déjà, afficher le QR code existant sur place
       if (error.response?.status === 400 && error.response?.data?.existingCode) {
+        console.log('✅ Email déjà utilisé, affichage du QR code existant')
+        
+        const baseUrl = window.location.origin
+        const qrUrl = `${baseUrl}/validate/${error.response.data.existingCode}`
+        
         setExistingReward({
-          code: error.response.data.existingCode,
+          code: qrUrl, // URL complète pour le QR code
           type: error.response.data.rewardType,
-          name: error.response.data.name
+          name: error.response.data.name,
+          rawCode: error.response.data.existingCode
         })
         setError('⚠️ Cet email a déjà été utilisé. Voici votre QR code existant :')
       } else if (error.response?.status === 400 && error.response?.data?.message?.includes('déjà participé')) {
@@ -130,11 +136,20 @@ function Home() {
                       />
                     </div>
                     <p className="reward-code">
-                      <strong>Code :</strong> {existingReward.code}
+                      <strong>Code :</strong> {existingReward.rawCode || existingReward.code}
                     </p>
                     <p className="reward-info">
-                      Présentez ce QR code en magasin pour récupérer votre récompense !
+                      📱 Scannez ce QR code avec votre appareil photo ou présentez-le en magasin !
                     </p>
+                    <a 
+                      href={existingReward.code} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="btn btn-outline"
+                      style={{ marginTop: '1rem' }}
+                    >
+                      🔗 Voir ma récompense
+                    </a>
                   </div>
                 )}
 
