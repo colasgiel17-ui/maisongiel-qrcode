@@ -39,19 +39,12 @@ function Home() {
         // Sauvegarder dans localStorage
         localStorage.setItem('sessionId', sessionId)
         localStorage.setItem('userName', name)
+        localStorage.setItem('userEmail', email)
         
         console.log('💾 SessionId sauvegardé:', sessionId)
         
-        // Ouvrir Google Maps dans un nouvel onglet
-        window.open(googleMapsUrl, '_blank')
-        
-        // Afficher le message
-        alert('✅ Une nouvelle fenêtre s\'est ouverte. Laissez votre avis puis revenez ici pour continuer !')
-        
-        // Rediriger vers la page de vérification
-        setTimeout(() => {
-          navigate('/verify-review')
-        }, 1000)
+        // Rediriger immédiatement vers la page de vérification
+        navigate('/verify-review')
       }
     } catch (error) {
       console.error('❌ Erreur lors de la participation:', error)
@@ -92,9 +85,9 @@ function Home() {
             </div>
 
             <div className="card form-card">
-              <h2>📝 Commencez ici</h2>
+              <h2>📝 Participez en 3 étapes</h2>
               <p className="form-description">
-                Renseignez vos informations pour participer
+                Renseignez vos informations pour commencer
               </p>
 
               <form onSubmit={handleSubmit}>
@@ -150,16 +143,16 @@ function Home() {
                   className="btn btn-primary btn-block"
                   disabled={loading || existingReward}
                 >
-                  {loading ? 'Chargement...' : '🚀 Participer'}
+                  {loading ? 'Chargement...' : '🚀 Commencer'}
                 </button>
               </form>
 
               <div className="info-box">
                 <p><strong>📌 Comment ça marche ?</strong></p>
                 <ol>
-                  <li>Remplissez ce formulaire</li>
-                  <li>Laissez un avis sur Google Maps</li>
-                  <li>Revenez ici et tournez la roue !</li>
+                  <li>Renseignez votre nom et email ci-dessus</li>
+                  <li>Laissez un avis 5⭐ sur Google Maps</li>
+                  <li>Copiez le lien et tournez la roue de la chance !</li>
                 </ol>
               </div>
             </div>
