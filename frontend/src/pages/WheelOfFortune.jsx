@@ -37,29 +37,25 @@ function WheelOfFortune() {
     setSpinning(true)
 
     try {
-      const response = await axios.post('/api/rewards/spin', { sessionId })
-      
+      const response = await axios.post('/api/rewards/spin', {
+        sessionId
+      })
+
       if (response.data.success) {
-        const { reward, code, name } = response.data
-        
-        // Trouver l'index
-        let prizeIndex = prizes.findIndex(p => reward.label.includes(p.label))
-        if (prizeIndex === -1) prizeIndex = 0
+        const { reward, code } = response.data
 
-        // Calcul rotation
-        const segmentAngle = 360 / prizes.length
-        const targetAngle = 360 - (prizeIndex * segmentAngle + segmentAngle / 2)
-        const finalRotation = 5 * 360 + targetAngle
+        // Sauvegarder dans localStorage
+        localStorage.setItem('rewardCode', code)
+        localStorage.setItem('rewardType', reward.label)
 
-        setRotation(finalRotation)
+        // Animation de la roue
+        const randomDegree = Math.floor(Math.random() * 360) + 1800
+        setRotation(randomDegree)
 
-        // Attendre fin animation
+        // Après l'animation, rediriger directement vers /validate/:code
         setTimeout(() => {
-          localStorage.removeItem('sessionId')
-          navigate('/reward', {
-            state: { reward, code, name }
-          })
-        }, 4500)
+          navigate(`/validate/${code}`)
+        }, 4000)
       }
     } catch (error) {
       alert(error.response?.data?.message || 'Une erreur est survenue')
